@@ -1,6 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, ForeignKey
-from sqlalchemy import Float, Integer, String, Date
+from sqlalchemy import Float, Integer, String, Date, Boolean
 from sqlalchemy.orm import relationship , backref
 import sqlalchemy
 import datetime
@@ -22,16 +22,20 @@ class Item(Base):
     qty = Column(Integer, default=0)
     description = Column(String)
 
-    def __init__(self, name, category, price, qty, description=''):
+    def __init__(self, name, category, price, id=None, qty=None, description=''):
         self.name = name
+        self.id = id
         self.category = category
         self.price = price
         self.qty = qty
         self.description = description
 
+    def __eq__(self, obj):
+        return repr(self) == repr(obj)
+
     def __repr__(self):
-        return '<Item(id=%(id)d,name=%(name)s,category=%(category)s,\
-price=%(price).2f, qty=%(qty)d)>' % self.__dict__
+        return '<Item(id={id},name={name},category={category}s,\
+price={price}, qty={qty})>'.format(**self.__dict__)
 
 class Transaction(Base):
     __tablename__ = 'transactions'
@@ -56,3 +60,8 @@ class Unit(Base):
     transaction = relationship('Transaction',
                     backref=backref('units',cascade='all,delete-orphan'))
     type = Column(String)
+    item_first_seen = Column(Boolean)
+
+    def __init__(self, qty, type, item_id=None, item=None, discount=0, item_first_seen=False):
+        for a in ('qty','type','item_id','item','discount','item_first_seen'):
+            setattr(self, a, locals()[a])
