@@ -17,6 +17,6 @@ def PostTransactionUndoEvent(target,  transaction):
 
 ItemSelectedEvent, EVT_ITEM_SELECTED = NewCommandEvent()
 
-def PostItemSelectedEvent(target,  item, qty=0):
-    evt = ItemSelectedEvent(target.GetId(),item=item, qty=qty)
+def PostItemSelectedEvent(target,  item, qty=0, discount=0):
+    evt = ItemSelectedEvent(target.GetId(),item=item, qty=qty, discount=discount)
     wx.PostEvent(target, evt)

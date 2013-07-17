@@ -37,6 +37,8 @@ class ItemNotFoundError(Exception):
     def __str__(self):
         return "Name:{}, Price:{}, Category:{}".format(self.name,self.price,self.category)
 
+class TransactionTypeError(Exception):
+    pass
 class ItemNotAvailableError(Exception):
     @setter('item_id','available','requested')
     def __init__(self, item_id, available, requested):
@@ -66,6 +68,9 @@ class Core:
         Base.metadata.create_all(engine)
         self.session = sessionmaker(bind=engine)()
         self.lock = threading.Lock()
+
+    def GetLock(self):
+        return self.lock
 
     @threadsafe
     @wrap_session
@@ -150,10 +155,22 @@ class Core:
             if abs(i.price - item.price) <= EPSILON:
                 return i
 
+
+    @threadsafe
+    @wrap_session
+    def AddBatchTransactions(self, transactions):
+        return [self._addTransaction(
+                *[getattr(t,a) for a in ('date','units','info','type')]
+                                    )
+                for t in transactions]
+
+
     @threadsafe
     @wrap_session
     def AddTransaction(self, date, units , info='', type=None):
+        return self._addTransaction(date, units, info, type)
 
+    def _addTransaction(self, date, units, info, type):
         #Check if date is greater than that of last transaction
         last_transaction = self.getLastRow(Transaction)
         if last_transaction and (last_transaction.date > date):
@@ -167,7 +184,7 @@ class Core:
 
             #Also check if types agree (if any)
             if type and type != u.type:
-                raise TypeError
+                raise TransactionTypeError
 
             assert isinstance(u,Unit), type(u)
 

@@ -6,9 +6,14 @@ from .item_viewer import ItemViewer
 from ..core import ADDITION, SALE, GIFT, TRANSFER, unit_total
 from .events import EVT_TRANSACTION_SELECTED, PostTransactionSelectedEvent,\
                      EVT_TRANSACTION_UNDO, PostTransactionUndoEvent
-from ..utils import pub
-from ..topics import TRANSACTION_CHANGED
+from ..utils import pub, text_to_html
+from ..topics import TRANSACTION_CHANGED, REDO
 from ..constants import NULL_TRANSACTION
+
+DEFAULT_FLAGS=wx.EXPAND|wx.ALL
+TRANSACTION_VIEWER_TITLE='Transaction List'
+TRANSACTION_DISPLAY_TITLE='Transaction Details'
+ITEM_VIWER_TITLE='Items Viewer'
 
 class TransactionViewer(ListCtrl):
     def __init__(self, parent):
@@ -33,6 +38,9 @@ class TransactionViewer(ListCtrl):
         # for wxGTK
         self.Bind(wx.EVT_RIGHT_UP, self.OnRightClick)
 
+        self.attr = wx.ListItemAttr()
+        self.attr.SetBackgroundColour("Yellow")
+        #self.attr.SetTextColour("White")
 
     def OnRightDown(self, evt):
         x = evt.GetX()
@@ -80,7 +88,15 @@ class TransactionViewer(ListCtrl):
         self.RefreshItems(0,self.count)
         self.Select(self.count-1)
 
+    def OnGetItemAttr(self, row):
+        if row == self.count-1:
+            return self.attr
+        else:
+            return None
+
     def OnGetItemText(self ,row, col):
+        if row == self.count-1:
+            return '-' if col != 3 else 'State of Items now'
         val = getattr(self.getTransactionAt(row),self.attrs[col])
         if isinstance(val,date):
             val = '{:%x}'.format(val)
@@ -117,8 +133,31 @@ class TransactionDisplay(wx.Panel):
 
     def UpdateDisplay(self, transaction):
 
+        if transaction is NULL_TRANSACTION:
+            html="""<html><body>
+            <p><u>Note</u> : <i>This is just a dummy transaction added to the transaction
+            list,so that, the current item state can also be seen
+            through history viewer.</i></p>
+            <p>
+            <h4><u>How to use History Viewer:</u></h4>
+            When a transraction is selected in the <u>Transaction List</u> (above),
+            The state of items just before the transaction was registerd is
+            shown in the <u>Item Viewer</u> (on the left).
+            The paritculars of the transaction are shown in <u>Transaction Details</u>
+            (this section).You can print the transaction details using the print Button (below).
+            To undo any transaction , right click on that transaction in the <u>Transaction List</u>
+            and press "Undo Selected Transaction". But note that if a transaction is undone, all the
+            transactions that have been registered after it will also be removed.In case you wish to redo your undo,
+            you may click on the redo button on the toolbar.
+            </body>
+            </html>
+            """
+            self.html.SetPage(html)
+            return
+
         vals ={ a:getattr(transaction,a)
                 for a in ('id','date','type','info','units') }
+        vals['info'] = text_to_html(vals['info'])
 
         html = """
         <html><body>
@@ -167,7 +206,7 @@ class TransactionDisplay(wx.Panel):
             grand_totals['total'] += total
             row = """<tr>
                     <td>{index}</td>
-                    <td><b>{u.item_id}</b>-{u.item.name}</td>
+                    <td>{u.item.name}</td>
                     <td>{u.qty}</td>
                     <td>{u.item.price:0.2f}</td>
                     {discount_str}
@@ -201,8 +240,34 @@ class HistoryViewer(wx.Frame):
         self.panel = wx.Panel(self)
         self.CreateControls(self.panel)
         self.PlaceControls(self.panel)
+        self._createToolbar()
+        self._makeBindings()
+
+    def _createToolbar(self):
+        items = [(wx.ID_REDO, wx.ART_REDO,'Redo',
+                'Redo the last set of transaction undone',
+                None)]
+        self.toolbar = self.CreateToolBar()
+        for i in items:
+            self.toolbar.AddLabelTool(id=i[0],
+                                    bitmap=wx.ArtProvider.GetBitmap(i[1]),
+                                    label=i[2],
+                                    shortHelp = i[3],
+                        longHelp = i[4] if i[4] is not None else i[3]
+                                    )
+        self.toolbar.Realize()
+
+    def _makeBindings(self):
         pub.subscribe(self.OnTransactionsChange, TRANSACTION_CHANGED)
+        pub.subscribe(self.OnRedoToggled, REDO)
         self.Bind(wx.EVT_CLOSE, self.OnWindowClose)
+        self.Bind(wx.EVT_TOOL, self.OnRedo, id=wx.ID_REDO)
+
+    def OnRedoToggled(self, enabled):
+        self.toolbar.EnableTool(wx.ID_REDO, enabled)
+
+    def OnRedo(self, evt):
+        self.backend.Redo()
 
     def OnWindowClose(self, evt):
         self.Show(False)
@@ -212,15 +277,6 @@ class HistoryViewer(wx.Frame):
 
     def OnTransactionUndo(self, event):
         transaction = event.transaction
-        #dlg = wx.MessageDialog(self, "Undoing this transaction will not just"\
-        #" delete this transaction but also all the transactions have occured"\
-        #" after this transaction. This change is irreversible and "\
-        #"will result in loss of data of all deleted transactions."\
-        #"Are you sure you want to continue?", 'Confirm Undo',
-        # wx.YES_NO|wx.ICON_INFORMATION)
-
-        #if dlg.ShowModal() == wx.ID_YES:
-        #    self.backend.Undo(transaction)
         self.backend.Undo(transaction)
 
     def CreateControls(self, parent):
@@ -234,15 +290,32 @@ class HistoryViewer(wx.Frame):
 
         self.transaction_display = TransactionDisplay(parent)
 
+    def _putInsideStaticBox(self, widget, label,
+                            proportion=1, flags=DEFAULT_FLAGS,
+                            border=10):
+        sBox = wx.StaticBox(self.panel, label=label)
+        sSizer = wx.StaticBoxSizer(sBox,wx.VERTICAL)
+        sSizer.Add(widget, proportion, flags, border)
+        return sSizer
+
+
     def PlaceControls(self, parent):
         hbox = wx.BoxSizer(wx.HORIZONTAL)
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        vbox.Add(self.transaction_viewer, 1, wx.EXPAND|wx.TOP|wx.BOTTOM, 5)
-        vbox.Add(self.transaction_display, 1, wx.EXPAND, 5)
+        vbox.Add(self._putInsideStaticBox(self.transaction_viewer,
+                                        TRANSACTION_VIEWER_TITLE),
+                 1, wx.EXPAND|wx.TOP,10)
 
-        hbox.Add(self.item_viewer, 1, wx.EXPAND|wx.ALL, 5)
-        hbox.Add(vbox, 1, wx.EXPAND)
+        vbox.Add(self._putInsideStaticBox(self.transaction_display,
+                                            TRANSACTION_DISPLAY_TITLE),
+                 1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        hbox.Add(self._putInsideStaticBox(self.item_viewer,
+                                        ITEM_VIWER_TITLE),
+                 1, wx.EXPAND|wx.TOP|wx.BOTTOM, 10)
+
+        hbox.Add(vbox, 1, wx.EXPAND|wx.ALL, 5)
 
         parent.SetSizerAndFit(hbox)
 

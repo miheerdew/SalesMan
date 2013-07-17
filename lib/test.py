@@ -1,17 +1,17 @@
 from __future__ import unicode_literals
-
 from StringIO import StringIO as BytesIO
 import csv
 import unittest
 from collections import namedtuple
 from datetime import date
 from sqlalchemy import create_engine
-from .core import Core, TimeLineError, ItemNotAvailableError
+from .core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
 from .models import Application
-from .utils import setter
+from .utils import setter, FunctionDisabledError
 from .core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
 from .schema import Base, Item, Transaction, Unit
 from .schema import ClearTable
+from .models import UserError
 import sqlalchemy
 
 BOOK = 'Books'
@@ -77,6 +77,17 @@ class TestCore(unittest.TestCase):
                 self.assertEqual(getattr(items[i],k),getattr(j,k))
 
         self.assertEqual(self.core.QueryItems().count(),len(items))
+
+    def test_batch_transaction(self):
+        ids1= [self.core.AddTransaction(**i) for i in self.get_transaction_data()]
+        state1 = self.get_state()
+        self.core.Undo(1)
+        ts = [Transaction(**i) for i in self.get_transaction_data()]
+        ids2 = self.core.AddBatchTransactions(ts)
+        state2 = self.get_state()
+
+        self.assertEqual(state1, state2)
+        self.assertEqual(ids1, ids2)
 
     def addSimpleTransaction(self, transaction):
         units = []
@@ -207,13 +218,13 @@ class TestCore(unittest.TestCase):
         self.assertEqual(self.core.QueryItems().get(2).qty,21)
 
     def test_add_transaction_with_type(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TransactionTypeError):
             self.core.AddTransaction(type=ADDITION,
                 date=date(2012,12,12),
                 units=[Unit(item_id=1, qty=1,
-                                    type=ADDITION),
-                            Unit(item_id=2, qty=1,
-                                    type=SALE)])
+                            type=ADDITION),
+                        Unit(item_id=2, qty=1,
+                                type=SALE)])
 
         self.assertEqual(30, self.core.QueryItems().get(1).qty)
         self.assertEqual(20, self.core.QueryItems().get(2).qty)
@@ -362,12 +373,22 @@ class TestCore(unittest.TestCase):
         return ( self.core.QueryItems().all(),
                 self.core.QueryTransactions().all() )
 
+    def get_transaction_data(self):
+        return [dict(date=date(2013,1,1),
+                    info='Happy New Year',
+                    units=[Unit(item_id=1,qty=3,discount=20,type=SALE)]),
+                dict(date=date(2013,2,1),
+                        units=[Unit(item_id=1,qty=20,type=ADDITION)]),
+                dict( date=date(2013,3,1),
+                        units=[Unit(item_id=1,qty=30,type=ADDITION)]
+                    )
+                ]
+
+
 
 class TestApp(unittest.TestCase):
 
     def setUp(self):
-        engine = create_engine('sqlite:///:memory:')
-        Base.metadata.create_all(engine)
         self.core = Application()
         self.core.OpenDatabase(':memory:')
 
@@ -393,6 +414,18 @@ class TestApp(unittest.TestCase):
                 self.assertEqual(getattr(items[i],k),getattr(j,k))
 
         self.assertEqual(self.core.QueryItems().count(),len(items))
+
+    def test_initial_disables(self):
+        app = Application()
+        app.Initialize()
+        for i in (('AddTransaction',''),('GenerateStatement',''),('GetCategories',),
+                ('GetHistory',1),('InitDatabase',''), ('QueryItems',),
+                ('QueryTransactions',),('Undo',1),('Redo',)):
+            assert hasattr(app,i[0])
+            assert callable(getattr(app,i[0]))
+            with self.assertRaises(FunctionDisabledError):
+                getattr(app,i[0])(*i[1:])
+
 
     def addSimpleTransaction(self, transaction):
         units = []
@@ -524,7 +557,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.core.QueryItems().get(2).qty,21)
 
     def test_add_transaction_with_type(self):
-        with self.assertRaises(TypeError):
+        with self.assertRaises(TransactionTypeError):
             self.core.AddTransaction(type=ADDITION,
                 date=date(2012,12,12),
                 units=[Unit(item_id=1, qty=1,
@@ -615,36 +648,40 @@ class TestApp(unittest.TestCase):
         new_item = self.core.QueryItems().get(5)
         self.assertEqual(new_item.name, 'Learn English')
 
-
     def test_raises_Item_not_available_error(self):
-        with self.assertRaises(ItemNotAvailableError):
-            self.core.AddTransaction(date=date(2013,1,1),
-            info='', units=[Unit(item_id=1,qty=40,type=SALE)])
+        with self.assertRaises(UserError):
+            try:
+                self.core.AddTransaction(date=date(2013,1,1),
+                    info='', units=[Unit(item_id=1,qty=40,type=SALE)])
+            except UserError as e:
+                self.assertTrue(isinstance(e.exception, ItemNotAvailableError))
+                raise
         self.assertEqual(self.core.QueryItems().get(1).qty, 30)
 
     def test_raises_time_line_error(self):
         self.core.AddTransaction(date=date(2013,2,1), units=[])
-        with self.assertRaises(TimeLineError):
-            self.core.AddTransaction(date=date(2013,1,1),
+        with self.assertRaises(UserError):
+            try:
+                self.core.AddTransaction(date=date(2013,1,1),
                     units=[Unit(item_id=1,qty=5,type=SALE)])
+            except UserError as e:
+                self.assertTrue(isinstance(e.exception,TimeLineError))
+                raise
         self.assertEqual(self.core.QueryItems().get(1).qty,30)
 
-    def test_relative_reverts(self):
-        initial_state = self.get_state()
-
-        self.core.AddTransaction( date=date(2013,1,1),
+    def get_transaction_data(self):
+        return [dict(date=date(2013,1,1),
                     info='Happy New Year',
-                    units=[Unit(item_id=1,qty=3,discount=20,type=SALE)]
-                        )
-        self.core.AddTransaction( date=date(2013,2,1),
-                        units=[Unit(item_id=1,qty=20, type=ADDITION)]
-                            )
+                    units=[Unit(item_id=1,qty=3,discount=20,type=SALE)]),
+                dict(date=date(2013,2,1),
+                        units=[Unit(item_id=1,qty=20,type=ADDITION)]),
+                dict( date=date(2013,3,1),
+                        units=[Unit(item_id=1,qty=30,type=ADDITION)]
+                    )
+                ]
 
-        self.core.Undo(-2)
 
-        self.assertEqual(initial_state, self.get_state())
-
-    def test_positional_undo(self):
+    def test_undo(self):
         initial_state = self.get_state()
         id1 = self.core.AddTransaction( date=date(2013,1,1),
                 info='Happy New Year',
@@ -652,7 +689,7 @@ class TestApp(unittest.TestCase):
                     )
         mid_state1 = self.get_state()
 
-        id2 = self.core.AddTransaction( date=date(2013,2,1),
+        id2 = self.core.AddTransaction(date=date(2013,2,1),
                         units=[Unit(item_id=1,qty=20,type=ADDITION)]
                             )
         mid_state2 = self.get_state()
@@ -675,6 +712,46 @@ class TestApp(unittest.TestCase):
         self.core.Undo(0)
         self.assertEqual(self.get_state(), initial_state)
 
+    def test_multiple_redo(self):
+        ids, states = [], []
+        for t in self.get_transaction_data():
+            ids.append(self.core.AddTransaction(**t))
+            states.append(self.get_state())
+
+        for i in reversed(ids):
+            self.core.Undo(i)
+
+        for s in states:
+            self.core.Redo()
+            self.assertEqual(self.get_state(),s)
+
+    def test_single_redo(self):
+        for t in self.get_transaction_data():
+            start1 = self.get_state()
+            self.core.AddTransaction(**t)
+            state2 = self.get_state()
+            self.core.Undo(-1)
+            self.assertEqual(start1, self.get_state())
+            self.core.Redo()
+            self.assertEqual(state2, self.get_state())
+
+        state = self.get_state()
+        self.core.Undo(1)
+        self.core.Redo()
+        self.assertEqual(self.get_state(),state)
+
+    def get_transaction_data(self):
+        return [dict(date=date(2013,1,1),
+                    info='Happy New Year',
+                    units=[Unit(item_id=1,qty=3,discount=20,type=SALE)]),
+                dict(date=date(2013,2,1),
+                        units=[Unit(item_id=1,qty=20,type=ADDITION)]),
+                dict( date=date(2013,3,1),
+                        units=[Unit(item_id=1,qty=30,type=ADDITION)]
+                    )
+                ]
+
+
     def get_state(self):
         return ( self.core.QueryItems().all(),
                 self.core.QueryTransactions().all() )
@@ -692,6 +769,7 @@ class SetterDecoratorTester(unittest.TestCase):
 
         self.assertSequenceEqual(A().func1(1,2,3),(1,2,3))
         self.assertSequenceEqual(A().func2(1,2),(2,None))
+
 
 
 if __name__ == '__main__':

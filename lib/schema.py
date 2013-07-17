@@ -7,6 +7,12 @@ import datetime
 import unittest
 
 Base = declarative_base()
+EPSILON=0.01
+def has_equal_attrs(obj1, obj2, attrs=[]):
+    try:
+        return all(getattr(obj1,a)==getattr(obj2,a) for a in attrs)
+    except AttributeError:
+        return False
 
 def ClearTable(mapper_class, session):
     for r in session.query(mapper_class):
@@ -31,11 +37,13 @@ class Item(Base):
         self.description = description
 
     def __eq__(self, obj):
-        return repr(self) == repr(obj)
+        return has_equal_attrs(self, obj, ['name','category','qty']) \
+            and (self.price-obj.price) < EPSILON
 
     def __repr__(self):
-        return '<Item(id={id},name={name},category={category}s,\
-price={price}, qty={qty})>'.format(**self.__dict__)
+        return '<Item(id={id},name={name},category={category},\
+price={price}, qty={qty})>'.format(**{a:getattr(self,a)
+            for a in ['id','name','category','price','qty']})
 
 class Transaction(Base):
     __tablename__ = 'transactions'
@@ -46,7 +54,11 @@ class Transaction(Base):
     type = Column(String)
 
     def __repr__(self):
-        return '<Transaction(id=%(id)d, date=%(date)s>'%self.__dict__
+        return '<Transaction(id={id}, date={date}, units={units}>'\
+                .format(**{a:getattr(self,a) for a in ['id','date','units']})
+
+    def __eq__(self, obj):
+        return has_equal_attrs(self, obj, ['date','units','type'])
 
 class Unit(Base):
     __tablename__ = 'units'
@@ -65,3 +77,11 @@ class Unit(Base):
     def __init__(self, qty, type, item_id=None, item=None, discount=0, item_first_seen=False):
         for a in ('qty','type','item_id','item','discount','item_first_seen'):
             setattr(self, a, locals()[a])
+
+    def __eq__(self, obj):
+        return has_equal_attrs(self, obj,
+                                ['qty','discount','type','item'])
+
+    def __repr__(self):
+        return '<Unit(type={type},qty={qty},item={item},discount={discount})>'.\
+                    format(**{a:getattr(self,a) for a in ['type','qty','discount','item']})
