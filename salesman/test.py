@@ -1,3 +1,19 @@
+#Copyright (C) 2013  Miheer Dewaskar <miheerdew@gmail.com>
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 from __future__ import unicode_literals
 from StringIO import StringIO as BytesIO
 import csv
@@ -5,13 +21,13 @@ import unittest
 from collections import namedtuple
 from datetime import date
 from sqlalchemy import create_engine
-from .core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
-from .models import Application
-from .utils import setter, FunctionDisabledError
-from .core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
-from .schema import Base, Item, Transaction, Unit
-from .schema import ClearTable
-from .models import UserError
+from .lib.core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
+from .lib.models import Application
+from .lib.utils import setter, FunctionDisabledError
+from .lib.core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
+from .lib.schema import Base, Item, Transaction, Unit
+from .lib.schema import ClearTable
+from .lib.models import UserError
 import sqlalchemy
 
 BOOK = 'Books'

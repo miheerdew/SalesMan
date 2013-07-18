@@ -1,3 +1,19 @@
+#Copyright (C) 2013  Miheer Dewaskar <miheerdew@gmail.com>
+#
+#This program is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#This program is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+#
+#You should have received a copy of the GNU General Public License
+#along with this program.  If not, see <http://www.gnu.org/licenses/>
+
+
 """This module provides the Application class, the model for
 the application"""
 
@@ -455,6 +471,7 @@ class TransactionMaker:
 
     def AddItem(self, name, category, price, qty=0, discount=0):
         item_sig = (name,category,price)
+        print item_sig
         if qty <= 0 and (item_sig in self.units):
             del self.units[item_sig]
 
