@@ -471,7 +471,6 @@ class TransactionMaker:
 
     def AddItem(self, name, category, price, qty=0, discount=0):
         item_sig = (name,category,price)
-        print item_sig
         if qty <= 0 and (item_sig in self.units):
             del self.units[item_sig]
 

@@ -76,7 +76,7 @@ class TransactionMaker(wx.Panel):
                 (self.typeCtrl,(0,1),(1,1),wx.EXPAND),
                 (self.dateLabel,(0,5),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
                 (self.dateCtrl, (0,6),(1,1),wx.EXPAND),
-                (self.infoLabel, (1,0),(1,1),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
+                (self.infoLabel, (1,0),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
                 (self.infoCtrl, (1,1), (2,4), wx.EXPAND),
                 (self.nameLabel, (3,0),(1,3),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
                 (self.nameCtrl, (4,0), (1,3),wx.EXPAND),
