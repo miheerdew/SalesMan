@@ -2,7 +2,7 @@
 *.spec
 # C extensions
 *.so
-
+MANIFEST
 # Packages
 *.egg
 *.egg-info
