@@ -1,12 +1,12 @@
 *.py[cod]
-
+*.spec
 # C extensions
 *.so
 
 # Packages
 *.egg
 *.egg-info
-#dist
+dist
 build
 eggs
 parts
