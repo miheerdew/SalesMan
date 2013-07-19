@@ -23,7 +23,7 @@ from datetime import date
 from sqlalchemy import create_engine
 from .lib.core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
 from .lib.models import Application
-from .lib.utils import setter, FunctionDisabledError
+from .lib.utils import setter, FunctionDisabledError, standardizeString
 from .lib.core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
 from .lib.schema import Base, Item, Transaction, Unit
 from .lib.schema import ClearTable
@@ -427,7 +427,11 @@ class TestApp(unittest.TestCase):
 
         for i,j in enumerate(self.core.QueryItems()):
             for k in ('name','category','price','qty','description'):
-                self.assertEqual(getattr(items[i],k),getattr(j,k))
+                a1=getattr(items[i],k)
+                a2=getattr(j,k)
+                if isinstance(a1,basestring):
+                    a1 = standardizeString(a1)
+                self.assertEqual(a1,a2)
 
         self.assertEqual(self.core.QueryItems().count(),len(items))
 
@@ -619,11 +623,11 @@ class TestApp(unittest.TestCase):
         info = "A test transaction"
         u = [
             Unit( qty=1, type=ADDITION,
-                item=Item(name='Abc for kids',
+                item=Item(name='Abc For Kids',
                         category=BOOK, price=20) ),
 
             Unit(qty=1, type=ADDITION,
-                item=Item(name='Abc for kids',
+                item=Item(name='Abc For Kids',
                         category=BOOK, price=120) )
                     ]
 
