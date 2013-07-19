@@ -30,7 +30,10 @@ def text_to_html(text):
     table = {'\n':'<br>',
             '<':'le;',
             '>':'ge;'}
+    return translate(table, text)
 
+
+def translate(table, text):
     return ''.join(table.get(i,i) for i in text)
 
 def ensure_dir_exists(dirname):
@@ -208,3 +211,16 @@ def get_save_path_from_dialog(dlg, extension=None):
             path=os.path.splitext(path)[0]
             path = path + '.'+ extension
     return path
+
+def normalizeString(string):
+    """Normalized a string,
+
+    >>normalizeString("asd  Adsbs \t  \n Bd a   ")
+    'asd adsbs bd a'
+    """
+    return ' '.join(w.lower() for w in string.split())
+
+def standardizeString(string):
+    """A standardized string is a normalized string with some
+    standard.(ie it looks respectible to see unlike a normal string)"""
+    return normalizeString(string).title()

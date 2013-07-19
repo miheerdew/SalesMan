@@ -25,6 +25,7 @@ from .auto_complete_controls import \
                             NameCtrlWithItemAutoComplete as NameCtrlAC
 from .events import EVT_ITEM_SELECTED, PostItemSelectedEvent
 from . import images
+from ..utils import standardizeString
 
 TYPE_LIST = ADDITION, SALE, GIFT, TRANSFER
 DEFAULT_TYPE = SALE
@@ -128,8 +129,8 @@ class TransactionMaker(wx.Panel):
         self.addItem(remove=True)
 
     def addItem(self, remove=False):
-        name = self.nameCtrl.GetValue().strip()
-        category = self.categoryCtrl.GetValue().strip()
+        name = standardizeString(self.nameCtrl.GetValue())
+        category = standardizeString(self.categoryCtrl.GetValue().strip())
         price = float(self.priceCtrl.GetValue())
         qty = 0
         if not remove:
@@ -143,6 +144,7 @@ class TransactionMaker(wx.Panel):
 
         self.model.AddItem(name,category,price,qty,discount)
         self.ClearItemEntryForm()
+        self.nameCtrl.SetFocus()
 
     def ClearItemEntryForm(self):
         self.nameCtrl.SetValue('')

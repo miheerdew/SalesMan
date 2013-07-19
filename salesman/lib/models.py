@@ -27,7 +27,8 @@ import sqlalchemy
 from .core import Core, SALE, ADDITION, GIFT, TRANSFER
 from .core import TimeLineError, ItemNotFoundError, ItemNotAvailableError
 from .schema import Transaction, Item, Unit
-from .utils import threadsafe, ToggleableMethods, run_if_enabled, pub
+from .utils import threadsafe, ToggleableMethods, run_if_enabled, pub,\
+                    normalizeString, standardizeString
 from .topics import *
 
 DATE_FORMAT='%d/%m/%Y'
@@ -183,23 +184,27 @@ class Application(ToggleableMethods):
                 reader = csv.DictReader(fd, dialect=dialect)
 
                 permitted = {'name','qty','price','description','category'}
-                if not (set(reader.fieldnames) == permitted):
+                fnames=set(map(normalizeString,reader.fieldnames))
+                if not ( fnames <=  permitted):
                     e_msg = ('Cannot process file {} '.format(csvfile),
-                    'The fieldnames should only be {} '.format(permitted))
+                    'Cannot recognize fieldnames {}'.format(list(fnames - permitted)) +
+                    'The fieldnames should only be from {},'.format(list(permitted)))
                     raise UserError(*e_msg)
 
                 for i,row in enumerate(reader):
                     line_num = i+2
+                    args = {normalizeString(k):standardizeString(v) for k,v in row.items()}
+
                     try:
-                        row['qty']=int(row['qty'])
-                        row['price']=float(row['price'])
+                        args['qty']=int(args['qty'])
+                        args['price']=float(args['price'])
                     except ValueError:
                         e_msg = ('Cannot process file {} '.format(csvfile),
                             'Cannot convert string to numeric'
                             'value at line {}'.format(line_num))
                         raise UserError(*e_msg)
 
-                    items.append(Item(**row))
+                    items.append(Item(**args))
             finally:
                 if opened: fd.close()
 
@@ -470,6 +475,7 @@ class TransactionMaker:
         self.NotifyChanges()
 
     def AddItem(self, name, category, price, qty=0, discount=0):
+        name, category = map(standardizeString,(name,category))
         item_sig = (name,category,price)
         if qty <= 0 and (item_sig in self.units):
             del self.units[item_sig]

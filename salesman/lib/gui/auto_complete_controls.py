@@ -16,6 +16,7 @@
 from .item_viewer import ItemViewer
 
 from ..schema import Item
+from ..utils import translate, normalizeString
 import wx
 
 class NameCtrlWithItemAutoComplete(wx.TextCtrl):
@@ -93,7 +94,7 @@ class NameCtrlWithItemAutoComplete(wx.TextCtrl):
         self._showDropDown(False)
 
     def GetQueryResult(self,query):
-        return self._backend.QueryItems().filter(Item.name.like('%{}%'.format(query.replace('%','%%'))))
+        return self._backend.QueryItems().filter(Item.name.ilike('%{}%'.format(query.replace('%','%%'))))
 
     def onListDClick(self, evt):
         #Done
@@ -101,7 +102,8 @@ class NameCtrlWithItemAutoComplete(wx.TextCtrl):
 
     def onEnteredText(self, event):
         text = event.GetString()
-        self._query = text.replace('%','%%')
+        table = {'%':'%%',' ':'%'}
+        self._query = translate(table,normalizeString(text))
         self.UpdateDisplay()
 
         if not text:
