@@ -69,7 +69,7 @@ class TransactionMaker(wx.Panel):
 
         hbox2=self.discount_box=wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(self.discountLabel,0,wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT)
-        hbox2.Add(self.discountCtrl, 1,wx.ALIGN_LEFT|wx.LEFT,10)
+        hbox2.Add(self.discountCtrl, 0,wx.ALIGN_LEFT|wx.LEFT,10)
         hbox2.Add(self.percentageCheck,0,wx.ALIGN_LEFT)
 
         return [(self.typeLabel,(0,0),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
@@ -83,10 +83,10 @@ class TransactionMaker(wx.Panel):
                 (self.categoryLabel, (3,3),(1,2),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
                 (self.categoryCtrl, (4,3),(1,2),wx.EXPAND),
                 (self.priceLabel, (3,5),(1,1),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
-                (self.priceCtrl, (4,5), (1,1),wx.ALIGN_LEFT),
+                (self.priceCtrl, (4,5), (1,1),wx.ALIGN_CENTER),
                 (self.qtyLabel, (3,6),(1,1),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
-                (self.qtyCtrl, (4,6), (1,1),wx.ALIGN_LEFT),
-                (hbox2, (5,4),(1,2),wx.EXPAND),
+                (self.qtyCtrl, (4,6), (1,1),wx.ALIGN_CENTER),
+                (hbox2, (5,4),(1,2),wx.ALIGN_RIGHT),
                 (hbox1,(5,0),(1,1), wx.ALIGN_LEFT),
                 (self.confirmBtn,(5,1),(1,1),wx.EXPAND),
                 (self.resetBtn,(5,2),(1,1),wx.EXPAND),
