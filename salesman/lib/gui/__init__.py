@@ -69,6 +69,7 @@ class Application(wx.App):
         mainFrame = MainFrame(self.backend,None)
         self.backend.Initialize()
         mainFrame.Show(True)
+        mainFrame.Maximize() #For working with pyinstaller on windows
 
     def _tryToOpenLastSession(self):
         try:

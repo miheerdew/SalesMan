@@ -24,12 +24,15 @@ from ..constants import STATEMENT_FILE_EXTENSION,\
 from ..models import UserError
 TITLE='Statement Creation Wizard'
 MESSAGE = """
-<html><body bgcolor='light grey'>
+<html><body>
 <h3 align='center'>This wizard will guide you to generate your statement</h3>
 <p>Please select the dates between which you want to generate the
 statement.
 All tansactions that happened on and after <u>Start Date</u>
 and on and before <u>End Date</u> will be taken into account.
+Also fill in the file you want the statement to be saved as in the
+entry box below, you can click on the button besides it to open the
+file save dialog.
 </html></body>
 """
 
