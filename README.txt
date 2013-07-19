@@ -3,7 +3,7 @@ SalesMan
 ========
 
 SalesMan is an application developed for managing addition and sale
-of items. I helps in making invoices and generating statements of sale.
+of items. It helps in making invoices and generating statements of sale.
 
 
 Running the Application
