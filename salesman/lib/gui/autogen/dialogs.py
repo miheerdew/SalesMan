@@ -1,20 +1,4 @@
-
-# -*- coding: utf-8 -*-
-
-#Copyright (C) 2013  Miheer Dewaskar <miheerdew@gmail.com>
-#
-#This program is free software: you can redistribute it and/or modify
-#it under the terms of the GNU General Public License as published by
-#the Free Software Foundation, either version 3 of the License, or
-#(at your option) any later version.
-#
-#This program is distributed in the hope that it will be useful,
-#but WITHOUT ANY WARRANTY; without even the implied warranty of
-#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#GNU General Public License for more details.
-#
-#You should have received a copy of the GNU General Public License
-#along with this program.  If not, see <http://www.gnu.org/licenses/>
+# -*- coding: utf-8 -*- 
 
 ###########################################################################
 ## Python code generated with wxFormBuilder (version Oct  8 2012)
@@ -32,90 +16,151 @@ import wx.html
 ###########################################################################
 
 class StatementCreationWizard ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Statement Creation Wizard", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.Size( 500,500 ), wx.DefaultSize )
+		
+		bSizer1 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.html = wx.html.HtmlWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
+		bSizer1.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Set Dates" ), wx.VERTICAL )
+		
+		bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Start Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText1.Wrap( -1 )
+		bSizer2.Add( self.m_staticText1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		self.startDateCtrl = wx.DatePickerCtrl( self, wx.ID_ANY, wx.DefaultDateTime, wx.DefaultPosition, wx.DefaultSize, wx.DP_DEFAULT )
+		bSizer2.Add( self.startDateCtrl, 1, wx.ALL, 5 )
+		
+		
+		sbSizer1.Add( bSizer2, 0, wx.EXPAND, 5 )
+		
+		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"End Date", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText11.Wrap( -1 )
+		bSizer21.Add( self.m_staticText11, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		self.endDateCtrl = wx.DatePickerCtrl( self, wx.ID_ANY, wx.DefaultDateTime, wx.DefaultPosition, wx.DefaultSize, wx.DP_DEFAULT )
+		bSizer21.Add( self.endDateCtrl, 1, wx.ALL, 5 )
+		
+		
+		sbSizer1.Add( bSizer21, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer1.Add( sbSizer1, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Save file as" ), wx.HORIZONTAL )
+		
+		self.pathCtrl = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
+		sbSizer4.Add( self.pathCtrl, 1, wx.ALL, 5 )
+		
+		self.m_button1 = wx.Button( self, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, 0 )
+		sbSizer4.Add( self.m_button1, 0, wx.ALL, 5 )
+		
+		
+		bSizer1.Add( sbSizer4, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		m_sdbSizer2 = wx.StdDialogButtonSizer()
+		self.m_sdbSizer2OK = wx.Button( self, wx.ID_OK )
+		m_sdbSizer2.AddButton( self.m_sdbSizer2OK )
+		self.m_sdbSizer2Cancel = wx.Button( self, wx.ID_CANCEL )
+		m_sdbSizer2.AddButton( self.m_sdbSizer2Cancel )
+		m_sdbSizer2.Realize();
+		
+		bSizer1.Add( m_sdbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( bSizer1 )
+		self.Layout()
+		bSizer1.Fit( self )
+		
+		self.Centre( wx.BOTH )
+		
+		# Connect Events
+		self.m_button1.Bind( wx.EVT_BUTTON, self.OnPathButtonClick )
+		self.m_sdbSizer2OK.Bind( wx.EVT_BUTTON, self.OnOKButtonClick )
+	
+	def __del__( self ):
+		pass
+	
+	
+	# Virtual event handlers, overide them in your derived class
+	def OnPathButtonClick( self, event ):
+		event.Skip()
+	
+	def OnOKButtonClick( self, event ):
+		event.Skip()
+	
 
-    def __init__( self, parent, title=wx.EmptyString ):
-        wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = title, pos = wx.DefaultPosition, size = wx.Size( 500,500 ), style = wx.DEFAULT_DIALOG_STYLE )
+###########################################################################
+## Class SettingsDialog
+###########################################################################
 
-        self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
-
-        bSizer1 = wx.BoxSizer( wx.VERTICAL )
-
-        self.html = wx.html.HtmlWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
-        bSizer1.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
-
-        sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Set Dates" ), wx.VERTICAL )
-
-        bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
-
-        self.m_staticText3 = wx.StaticText( self, wx.ID_ANY, u"Start Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
-        self.m_staticText3.Wrap( -1 )
-        bSizer2.Add( self.m_staticText3, 1, wx.ALIGN_RIGHT|wx.ALL, 5 )
-
-        self.startDateCtrl = wx.DatePickerCtrl( self, wx.ID_ANY, wx.DefaultDateTime, wx.DefaultPosition, wx.DefaultSize, wx.DP_DEFAULT )
-        bSizer2.Add( self.startDateCtrl, 1, wx.ALL, 5 )
-
-
-        sbSizer1.Add( bSizer2, 0, wx.ALL|wx.EXPAND, 5 )
-
-        bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
-
-        self.m_staticText31 = wx.StaticText( self, wx.ID_ANY, u"End Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
-        self.m_staticText31.Wrap( -1 )
-        bSizer21.Add( self.m_staticText31, 1, wx.ALL|wx.EXPAND, 5 )
-
-        self.endDateCtrl = wx.DatePickerCtrl( self, wx.ID_ANY, wx.DefaultDateTime, wx.DefaultPosition, wx.DefaultSize, wx.DP_DEFAULT )
-        bSizer21.Add( self.endDateCtrl, 1, wx.ALL, 5 )
-
-
-        sbSizer1.Add( bSizer21, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-        bSizer1.Add( sbSizer1, 0, wx.ALL|wx.EXPAND, 10 )
-
-        sbSizer2 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Set path to statement file" ), wx.VERTICAL )
-
-        bSizer6 = wx.BoxSizer( wx.HORIZONTAL )
-
-        self.pathCtrl = wx.TextCtrl( self, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer6.Add( self.pathCtrl, 1, wx.ALL, 5 )
-
-        self.pathBtn = wx.Button( self, wx.ID_ANY, u"...", wx.DefaultPosition, wx.DefaultSize, 0 )
-        bSizer6.Add( self.pathBtn, 0, wx.ALL, 5 )
-
-
-        sbSizer2.Add( bSizer6, 1, wx.EXPAND, 5 )
-
-
-        bSizer1.Add( sbSizer2, 0, wx.ALL|wx.EXPAND, 10 )
-
-        m_sdbSizer1 = wx.StdDialogButtonSizer()
-        self.m_sdbSizer1OK = wx.Button( self, wx.ID_OK )
-        m_sdbSizer1.AddButton( self.m_sdbSizer1OK )
-        self.m_sdbSizer1Cancel = wx.Button( self, wx.ID_CANCEL )
-        m_sdbSizer1.AddButton( self.m_sdbSizer1Cancel )
-        m_sdbSizer1.Realize();
-
-        bSizer1.Add( m_sdbSizer1, 0, wx.ALL|wx.EXPAND, 5 )
-
-
-        self.SetSizer( bSizer1 )
-        self.Layout()
-
-        self.Centre( wx.BOTH )
-
-        # Connect Events
-        self.pathBtn.Bind( wx.EVT_BUTTON, self.OnPathButtonClick )
-        self.m_sdbSizer1OK.Bind( wx.EVT_BUTTON, self.OnOKButtonClick )
-
-    def __del__( self ):
-        pass
-
-
-    # Virtual event handlers, overide them in your derived class
-    def OnPathButtonClick( self, event ):
-        event.Skip()
-
-    def OnOKButtonClick( self, event ):
-        event.Skip()
-
+class SettingsDialog ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Settings Dialog", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.Size( 500,500 ), wx.DefaultSize )
+		
+		bSizer4 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.html = wx.html.HtmlWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
+		bSizer4.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Statement Formatter Plugin" ), wx.VERTICAL )
+		
+		bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText3 = wx.StaticText( self, wx.ID_ANY, u"select plugin ", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText3.Wrap( -1 )
+		bSizer5.Add( self.m_staticText3, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		
+		statementFormatterChoiceChoices = []
+		self.statementFormatterChoice = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, statementFormatterChoiceChoices, 0 )
+		self.statementFormatterChoice.SetSelection( 0 )
+		self.statementFormatterChoice.SetMinSize( wx.Size( 250,-1 ) )
+		
+		bSizer5.Add( self.statementFormatterChoice, 1, wx.ALL, 5 )
+		
+		
+		sbSizer3.Add( bSizer5, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer4.Add( sbSizer3, 0, wx.ALL|wx.EXPAND, 10 )
+		
+		m_sdbSizer2 = wx.StdDialogButtonSizer()
+		self.m_sdbSizer2Save = wx.Button( self, wx.ID_SAVE )
+		m_sdbSizer2.AddButton( self.m_sdbSizer2Save )
+		self.m_sdbSizer2Cancel = wx.Button( self, wx.ID_CANCEL )
+		m_sdbSizer2.AddButton( self.m_sdbSizer2Cancel )
+		m_sdbSizer2.Realize();
+		
+		bSizer4.Add( m_sdbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( bSizer4 )
+		self.Layout()
+		bSizer4.Fit( self )
+		
+		self.Centre( wx.BOTH )
+		
+		# Connect Events
+		self.m_sdbSizer2Save.Bind( wx.EVT_BUTTON, self.OnSaveButtonClick )
+	
+	def __del__( self ):
+		pass
+	
+	
+	# Virtual event handlers, overide them in your derived class
+	def OnSaveButtonClick( self, event ):
+		event.Skip()
+	
 

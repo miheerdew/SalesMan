@@ -18,12 +18,47 @@ from .autogen import dialogs as auto
 import wx
 import os
 from ..utils import wxdate_to_pydate, get_save_path_from_dialog
-from ..constants import STATEMENT_FILE_EXTENSION,\
-                          STATEMENT_FILE_WILD_CARD,\
-                          DEFAULT_STATEMENT_FILE_NAME
 from ..models import UserError
-TITLE='Statement Creation Wizard'
-MESSAGE = """
+from ..constants import *
+from yapsy.PluginManager import PluginManagerSingleton
+
+
+class SettingsDialog(auto.SettingsDialog):
+    def __init__(self, parent):
+        super(SettingsDialog,self).__init__(parent)
+        self.html.SetPage("""
+        <html>
+            <h1>Settings</h1>
+        </html>
+        """)
+        self.app = app = wx.GetApp()
+        manager = PluginManagerSingleton.get()
+        current_pname = app.getStatementFormatterPluginName()
+
+        pnames = [p.name for p in
+                    manager.getPluginsOfCategory(STATEMENT_FORMATTER)]
+        self.statementFormatterChoice.SetItems(pnames)
+        try:
+            i = pnames.index(current_pname)
+            self.statementFormatterChoice.SetSelection(i)
+        except ValueError:
+            pass
+
+    def OnSaveButtonClick(self, evt):
+        pname = self.statementFormatterChoice.GetStringSelection()
+        if not pname:
+            dlg = wx.MessageDialog(self,
+                    "Please select statement formatter plugin",
+                    "Incomplete Entry", style=wx.ICON_ERROR|wx.OK)
+            dlg.ShowModal()
+        else:
+            self.app.setConfig(STATEMENT_FORMATTER_SECTION_NAME, NAME,
+                                pname)
+            self.app.saveUserConfig()
+            self.EndModal(wx.ID_SAVE)
+
+class StatementCreationWizard(auto.StatementCreationWizard):
+    MESSAGE = """
 <html><body>
 <h3 align='center'>This wizard will guide you to generate your statement</h3>
 <p>Please select the dates between which you want to generate the
@@ -36,10 +71,9 @@ file save dialog.
 </html></body>
 """
 
-class StatementCreationWizard(auto.StatementCreationWizard):
     def __init__(self, parent):
-        super(StatementCreationWizard,self).__init__(parent,title=TITLE)
-        self.html.SetPage(MESSAGE)
+        super(StatementCreationWizard,self).__init__(parent)
+        self.html.SetPage(self.MESSAGE)
 
     def OnPathButtonClick( self, event ):
         dlg = wx.FileDialog(self, message="Save Statement File..",
