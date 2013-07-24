@@ -200,13 +200,17 @@ class TransactionMaker(wx.Panel):
         self.categoryCtrl = TextCtrlAC(self, choices=[''])
 
         self.priceLabel = wx.StaticText(self, label='Price')
-        self.priceCtrl = masked.NumCtrl(self, value=0, fractionWidth=2)
+        self.priceCtrl = masked.NumCtrl(self, value=0, fractionWidth=2,
+                                        allowNegative=False)
 
         self.qtyLabel = wx.StaticText(self, label='Qty')
-        self.qtyCtrl = masked.NumCtrl(self,value=1)
+        self.qtyCtrl = masked.NumCtrl(self,value=1,
+                                    allowNone=True,
+                                    allowNegative=False)
 
         self.discountLabel = wx.StaticText(self, label='Discount')
-        self.discountCtrl = masked.NumCtrl(self,value=0, fractionWidth=2)
+        self.discountCtrl = masked.NumCtrl(self,value=0, fractionWidth=2,
+                                            allowNegative=False)
 
         self.percentageCheck = wx.CheckBox(self, label="%", style=wx.ALIGN_RIGHT)
         self.percentageCheck.SetValue(1)

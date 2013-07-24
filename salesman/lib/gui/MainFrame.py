@@ -16,13 +16,15 @@
 import wx
 import os
 
-from .dialogs import StatementCreationWizard
+from .dialogs import StatementCreationWizard, SettingsDialog
 from ..utils import pub, silent_remove, get_save_path_from_dialog
 from ..topics import *
 from ..constants import *
 from .history_viewer import HistoryViewer
 from .transaction_maker import TransactionMaker
 from . import images
+from yapsy.PluginManager import PluginManagerSingleton
+from ..models import UserError
 
 class MenuItemToggleListener:
     def __init__(self, menuItem):
@@ -71,6 +73,11 @@ class MainFrame(wx.Frame):
                         (),
                         ('View History \tCTRL+H', wx.NewId(), self.OnViewHistory, GET_HISTORY)
                     )
+                ),
+                ('Preferences',
+                    (
+                        ('Settings\tCTRL+T', wx.NewId(), self.OnSettings ),
+                    )
                 )
         )
 
@@ -94,31 +101,38 @@ class MainFrame(wx.Frame):
     def OnExit(self, evt):
         self.Close()
 
+    def OnSettings(self, evt):
+        dlg = SettingsDialog(self)
+        dlg.ShowModal()
+        dlg.Destroy()
+
     def OnOpenDatabase(self, evt):
-        dlg = wx.FileDialog(None, message="Open Database File ..",
+        dlg = wx.FileDialog(self, message="Open Database File ..",
                 wildcard=DB_FILE_WILD_CARD,
                 style= wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
 
-        if dlg.ShowModal() != wx.ID_OK:
-            return
-        path = dlg.GetPath()
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
 
-        self.backend.OpenDatabase(path)
+            self.backend.OpenDatabase(path)
 
-        self.statusbar.PushStatusText('Opened database file "{}"'\
-                .format(path))
+            self.statusbar.PushStatusText('Opened database file "{}"'\
+                    .format(path))
 
-        self.SetTitle('{} :{}'.format(MAIN_FRAME_TITLE,path))
+            self.SetTitle('{} :{}'.format(MAIN_FRAME_TITLE,path))
 
+        dlg.Destroy()
 
 
     def OnCreateDatabase(self, evt):
-        dlg = wx.FileDialog(None, message="Create Database file..",
+        dlg = wx.FileDialog(self, message="Create Database file..",
                 wildcard=DB_FILE_WILD_CARD,
                 defaultFile=DEFAULT_DB_FILE_NAME,
                 style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
         path = get_save_path_from_dialog(dlg, DB_FILE_EXTENSION)
+
+        dlg.Destroy()
 
         if path is None:
             return
@@ -131,31 +145,31 @@ class MainFrame(wx.Frame):
 
 
     def OnInitDatabase(self, evt):
-        dlg = wx.FileDialog(None, message="Open file to init database ..",
+        dlg = wx.FileDialog(self, message="Open file to init database ..",
                 wildcard=INIT_FILE_WILD_CARD,
                 style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
 
-        if dlg.ShowModal() != wx.ID_OK:
-            return
+        if dlg.ShowModal() == wx.ID_OK:
+            self.backend.InitDatabase(dlg.GetPath())
+            self.statusbar.PushStatusText('Initialized database from file "{}"'\
+                    .format(dlg.GetPath()))
 
-        self.backend.InitDatabase(dlg.GetPath())
-        self.statusbar.PushStatusText('Initialized database from file "{}"'\
-                .format(dlg.GetPath()))
+        dlg.Destroy()
 
 
     def OnGenerateStatement(self, evt):
-
         dlg = StatementCreationWizard(self)
-        if dlg.ShowModal() != wx.ID_OK:
-            return
-        startDate, endDate = dlg.GetDates()
-        path = dlg.GetPath()
+        if dlg.ShowModal() == wx.ID_OK:
 
-        self.backend.GenerateStatement(path, startDate, endDate)
-        self.statusbar.PushStatusText('Generated statement file "{}"'
-                                        .format(path))
+            startDate, endDate = dlg.GetDates()
+            path = dlg.GetPath()
+            plugin = wx.GetApp().getStatementFormatterPlugin()
+            self.backend.GenerateStatement(path, startDate, endDate,
+                    plugin.plugin_object.format)
+            self.statusbar.PushStatusText('Generated statement file "{}"'
+                                            .format(path))
 
-
+        dlg.Destroy()
 
     def OnViewHistory(self, evt):
         self.history_viewer.Show(True)

@@ -39,3 +39,13 @@ STATEMENT_FILE_WILD_CARD=\
 NULL_TRANSACTION=Transaction(id=0,info='Null Transaction',date=datetime.date.max, units=[])
 
 MAIN_FRAME_TITLE='Sales Manager'
+
+APP_NAME = 'SalesMan'
+LAST_SESSION_SECTION_NAME='Last Session'
+STATEMENT_FORMATTER='StatementFormatter'
+STATEMENT_FORMATTER_SECTION_NAME='Statement Formatter'
+NAME='name'
+PATH='path'
+APP_CONFIG_FILE=APP_NAME+".conf"
+PLUGINS_DIR_NAME='plugins'
+DEFAULT_STATEMENT_FORMATTER_NAME='Default'
