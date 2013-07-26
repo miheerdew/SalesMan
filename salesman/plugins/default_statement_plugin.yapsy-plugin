@@ -1,0 +1,9 @@
+[Core]
+Name = Default Statement Formatter
+Module = default_statement_plugin
+
+[Documentation]
+Author = Miheer Dewaskar
+Version = 0.1
+Website = https://github.com/miheerdew/SalesMan
+Description = The Default Plugin supplied with Salesman

@@ -1,6 +1,6 @@
 [Core]
-Name = Default
-Module = default_plugin
+Name = Default Transaction Formatter
+Module = default_transaction_plugin
 
 [Documentation]
 Author = Miheer Dewaskar

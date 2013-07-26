@@ -50,4 +50,8 @@ NAME='name'
 PATH='path'
 APP_CONFIG_FILE=APP_NAME+".conf"
 PLUGINS_DIR_NAME='plugins'
-DEFAULT_PLUGIN_NAME='Default'
+DEFAULT_PLUGIN_MAP={
+        STATEMENT_FORMATTER:'Default Statement Formatter',
+        TRANSACTION_FORMATTER: 'Default Transaction Formatter'
+        }
+

@@ -89,8 +89,8 @@ class Application(wx.App):
         name = self.getConfig(PLUGINS_SECTION_NAME, category)
         if not name:
             self.setConfig( PLUGINS_SECTION_NAME, category,
-                            DEFAULT_PLUGIN_NAME)
-            name = DEFAULT_PLUGIN_NAME
+                            DEFAULT_PLUGIN_MAP[category])
+            name = DEFAULT_PLUGIN_MAP[category]
         return name
 
     def getPluginFromConfig(self, category):
