@@ -25,7 +25,7 @@ from yapsy.PluginManager import PluginManagerSingleton
 class SettingsDialog(auto.SettingsDialog):
     def __init__(self, parent):
         super(SettingsDialog,self).__init__(parent)
-        self.SetSize(500,300) #For windows
+        self.SetSize((500,300)) #For windows
 
         self.pluginsHtml.SetPage(
         """
