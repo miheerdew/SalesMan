@@ -1,4 +1,10 @@
 v0.1.0, 18-7-2013 -- Initial release
 
-v0.1.1, 19-7-2013 -- Standardized Names ( ie converts "abd \t xaDD" to "Abd Xadd" automaticlly in Item Name and Category),
+v0.1.1, 19-7-2013 -- Standardized Names ( ie converts "abd \t xaD" to "Abd Xad"
+		     automaticlly in the Name and Category),
 		     Sets focus back to Name Entry Ctrl , on Addition of item in Transaction Maker
+
+v0.2.0, 26-7-2013 -- Added plugin support for Statement Formatting 
+		     and Transaction Display. Added Settings dialog,
+		     with preferences stored in user config file
+		     Fixed the Bug in Qty Field
