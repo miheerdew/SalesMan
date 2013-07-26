@@ -46,6 +46,9 @@ def guiExceptionHandler(type, value, tb):
     dlg.Destroy()
 
 class Application(wx.App):
+    def __init__(self, redirect=False):
+        super(Application, self).__init__(redirect=redirect)
+
     def OnInit(self):
         self.SetAppName(APP_NAME)
         sys.excepthook = guiExceptionHandler

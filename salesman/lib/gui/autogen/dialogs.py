@@ -108,7 +108,7 @@ class SettingsDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Settings", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.Size( 500,300 ), wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( 500,400 ), wx.DefaultSize )
 		
 		bSizer6 = wx.BoxSizer( wx.VERTICAL )
 		
