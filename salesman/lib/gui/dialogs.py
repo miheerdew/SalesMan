@@ -22,54 +22,62 @@ from ..models import UserError
 from ..constants import *
 from yapsy.PluginManager import PluginManagerSingleton
 
-
 class SettingsDialog(auto.SettingsDialog):
     def __init__(self, parent):
         super(SettingsDialog,self).__init__(parent)
-        self.html.SetPage("""
+
+        self.pluginsHtml.SetPage(
+        """
         <html>
-            <h1>Settings</h1>
+        <body><h3 align="center">Select Plugins</h3><body>
         </html>
         """)
-        self.app = app = wx.GetApp()
-        manager = PluginManagerSingleton.get()
-        current_pname = app.getStatementFormatterPluginName()
 
-        pnames = [p.name for p in
-                    manager.getPluginsOfCategory(STATEMENT_FORMATTER)]
-        self.statementFormatterChoice.SetItems(pnames)
-        try:
-            i = pnames.index(current_pname)
-            self.statementFormatterChoice.SetSelection(i)
-        except ValueError:
-            pass
+        self.pluginCtrlMap = {
+                        STATEMENT_FORMATTER:self.statementFormatter,
+                        TRANSACTION_FORMATTER:self.transactionFormatter
+                        }
+        self.app = wx.GetApp()
+        manager = PluginManagerSingleton.get()
+
+        for category, ctrl in self.pluginCtrlMap.items():
+            currentSel = self.app.getPluginNameFromConfig(category)
+            choices = [ p.name for p in
+                    manager.getPluginsOfCategory(category) ]
+            ctrl.SetItems(choices)
+            try:
+                i = choices.index(currentSel)
+                ctrl.SetSelection(i)
+            except ValueError:
+                pass
 
     def OnSaveButtonClick(self, evt):
-        pname = self.statementFormatterChoice.GetStringSelection()
-        if not pname:
-            dlg = wx.MessageDialog(self,
-                    "Please select statement formatter plugin",
+        for category, ctrl in self.pluginCtrlMap.items():
+            sel = ctrl.GetSelection()
+            if sel == wx.NOT_FOUND:
+                dlg = wx.MessageDialog(self,
+                    "Please select plugin of category {}".format(category),
                     "Incomplete Entry", style=wx.ICON_ERROR|wx.OK)
-            dlg.ShowModal()
-        else:
-            self.app.setConfig(STATEMENT_FORMATTER_SECTION_NAME, NAME,
-                                pname)
-            self.app.saveUserConfig()
-            self.EndModal(wx.ID_SAVE)
+                dlg.ShowModal()
+                return
+            pluginName = ctrl.GetString(sel)
+            self.app.setPluginPreference(category, pluginName)
+        self.app.saveUserConfig()
+        self.EndModal(wx.ID_SAVE)
 
 class StatementCreationWizard(auto.StatementCreationWizard):
     MESSAGE = """
-<html><body>
-<h3 align='center'>This wizard will guide you to generate your statement</h3>
-<p>Please select the dates between which you want to generate the
-statement.
-All tansactions that happened on and after <u>Start Date</u>
-and on and before <u>End Date</u> will be taken into account.
-Also fill in the file you want the statement to be saved as in the
-entry box below, you can click on the button besides it to open the
-file save dialog.
-</html></body>
-"""
+    <html><body>
+    <h3 align='center'>This wizard will guide you to generate your statement</h3>
+    <p>Please select the dates between which you want to generate the
+    statement.
+    All tansactions that happened on and after <u>Start Date</u>
+    and on and before <u>End Date</u> will be taken into account.
+    Also fill in the file you want the statement to be saved as in the
+    entry box below, you can click on the button besides it to open the
+    file save dialog.
+    </html></body>
+    """
 
     def __init__(self, parent):
         super(StatementCreationWizard,self).__init__(parent)

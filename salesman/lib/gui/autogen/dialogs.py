@@ -106,54 +106,68 @@ class StatementCreationWizard ( wx.Dialog ):
 class SettingsDialog ( wx.Dialog ):
 	
 	def __init__( self, parent ):
-		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Settings Dialog", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Settings", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.Size( 500,500 ), wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( 500,300 ), wx.DefaultSize )
 		
-		bSizer4 = wx.BoxSizer( wx.VERTICAL )
+		bSizer6 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.html = wx.html.HtmlWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
-		bSizer4.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
+		self.m_notebook1 = wx.Notebook( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.NB_LEFT )
+		self.m_panel1 = wx.Panel( self.m_notebook1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		gbSizer1 = wx.GridBagSizer( 10, 10 )
+		gbSizer1.SetFlexibleDirection( wx.BOTH )
+		gbSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
-		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Statement Formatter Plugin" ), wx.VERTICAL )
+		self.pluginsHtml = wx.html.HtmlWindow( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
+		gbSizer1.Add( self.pluginsHtml, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 10 )
 		
-		bSizer5 = wx.BoxSizer( wx.HORIZONTAL )
+		self.m_staticText5 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Statement Formatter", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText5.Wrap( -1 )
+		gbSizer1.Add( self.m_staticText5, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 10 )
 		
-		self.m_staticText3 = wx.StaticText( self, wx.ID_ANY, u"select plugin ", wx.DefaultPosition, wx.DefaultSize, 0 )
-		self.m_staticText3.Wrap( -1 )
-		bSizer5.Add( self.m_staticText3, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
+		self.m_staticText6 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Transaction Formatter", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText6.Wrap( -1 )
+		gbSizer1.Add( self.m_staticText6, wx.GBPosition( 2, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 10 )
 		
-		statementFormatterChoiceChoices = []
-		self.statementFormatterChoice = wx.Choice( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, statementFormatterChoiceChoices, 0 )
-		self.statementFormatterChoice.SetSelection( 0 )
-		self.statementFormatterChoice.SetMinSize( wx.Size( 250,-1 ) )
+		transactionFormatterChoices = []
+		self.transactionFormatter = wx.Choice( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, transactionFormatterChoices, 0 )
+		self.transactionFormatter.SetSelection( 0 )
+		gbSizer1.Add( self.transactionFormatter, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
 		
-		bSizer5.Add( self.statementFormatterChoice, 1, wx.ALL, 5 )
-		
-		
-		sbSizer3.Add( bSizer5, 1, wx.EXPAND, 5 )
-		
-		
-		bSizer4.Add( sbSizer3, 0, wx.ALL|wx.EXPAND, 10 )
-		
-		m_sdbSizer2 = wx.StdDialogButtonSizer()
-		self.m_sdbSizer2Save = wx.Button( self, wx.ID_SAVE )
-		m_sdbSizer2.AddButton( self.m_sdbSizer2Save )
-		self.m_sdbSizer2Cancel = wx.Button( self, wx.ID_CANCEL )
-		m_sdbSizer2.AddButton( self.m_sdbSizer2Cancel )
-		m_sdbSizer2.Realize();
-		
-		bSizer4.Add( m_sdbSizer2, 0, wx.ALL|wx.EXPAND, 5 )
+		statementFormatterChoices = []
+		self.statementFormatter = wx.Choice( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, statementFormatterChoices, 0 )
+		self.statementFormatter.SetSelection( 0 )
+		gbSizer1.Add( self.statementFormatter, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
 		
 		
-		self.SetSizer( bSizer4 )
+		gbSizer1.AddGrowableCol( 1 )
+		gbSizer1.AddGrowableRow( 0 )
+		
+		self.m_panel1.SetSizer( gbSizer1 )
+		self.m_panel1.Layout()
+		gbSizer1.Fit( self.m_panel1 )
+		self.m_notebook1.AddPage( self.m_panel1, u"Plugins", False )
+		
+		bSizer6.Add( self.m_notebook1, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		m_sdbSizer3 = wx.StdDialogButtonSizer()
+		self.m_sdbSizer3Save = wx.Button( self, wx.ID_SAVE )
+		m_sdbSizer3.AddButton( self.m_sdbSizer3Save )
+		self.m_sdbSizer3Cancel = wx.Button( self, wx.ID_CANCEL )
+		m_sdbSizer3.AddButton( self.m_sdbSizer3Cancel )
+		m_sdbSizer3.Realize();
+		
+		bSizer6.Add( m_sdbSizer3, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( bSizer6 )
 		self.Layout()
-		bSizer4.Fit( self )
+		bSizer6.Fit( self )
 		
 		self.Centre( wx.BOTH )
 		
 		# Connect Events
-		self.m_sdbSizer2Save.Bind( wx.EVT_BUTTON, self.OnSaveButtonClick )
+		self.m_sdbSizer3Save.Bind( wx.EVT_BUTTON, self.OnSaveButtonClick )
 	
 	def __del__( self ):
 		pass

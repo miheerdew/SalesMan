@@ -15,6 +15,7 @@
 
 from .schema import Transaction
 import datetime
+
 def simple_wild_card_from_extension(ext, desc=None):
     if desc is None:
         desc = ext
@@ -42,10 +43,11 @@ MAIN_FRAME_TITLE='Sales Manager'
 
 APP_NAME = 'SalesMan'
 LAST_SESSION_SECTION_NAME='Last Session'
-STATEMENT_FORMATTER='StatementFormatter'
-STATEMENT_FORMATTER_SECTION_NAME='Statement Formatter'
+PLUGINS_SECTION_NAME='Plugins'
+TRANSACTION_FORMATTER='Transaction Formatter'
+STATEMENT_FORMATTER='Statement Formatter'
 NAME='name'
 PATH='path'
 APP_CONFIG_FILE=APP_NAME+".conf"
 PLUGINS_DIR_NAME='plugins'
-DEFAULT_STATEMENT_FORMATTER_NAME='Default'
+DEFAULT_PLUGIN_NAME='Default'
