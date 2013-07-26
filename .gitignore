@@ -1,6 +1,6 @@
 *.py[cod]
-*.spec
-*.fbp
+#*.spec
+#*.fbp
 # C extensions
 *.so
 MANIFEST

@@ -16,6 +16,8 @@
 from .lib.gui import Application, ApplicationWithDebugger
 import unittest
 import sys
+import os
+
 
 def main():
     args = set(sys.argv[1:])

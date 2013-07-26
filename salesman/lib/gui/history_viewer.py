@@ -24,7 +24,7 @@ from .events import EVT_TRANSACTION_SELECTED, PostTransactionSelectedEvent,\
                      EVT_TRANSACTION_UNDO, PostTransactionUndoEvent
 from ..utils import pub, text_to_html
 from ..topics import TRANSACTION_CHANGED, REDO
-from ..constants import NULL_TRANSACTION
+from ..constants import NULL_TRANSACTION, TRANSACTION_FORMATTER
 
 DEFAULT_FLAGS=wx.EXPAND|wx.ALL
 TRANSACTION_VIEWER_TITLE='Transaction List'
@@ -122,10 +122,17 @@ class TransactionDisplay(wx.Panel):
     def __init__(self, parent):
         wx.Panel.__init__(self, parent)
         self.printer = html.HtmlEasyPrinting()
+        self.currentTransaction = None
 
         self.SetupWidgets()
         self.PositionWidgets()
         self.BindWidgets()
+
+        self.transactionFormatterPlugin = wx.GetApp().\
+                    getPluginFromConfig(TRANSACTION_FORMATTER)
+
+        pub.subscribe(self.OnFormatterChanged, TRANSACTION_FORMATTER)
+
 
     def SetupWidgets(self):
         self.html = html.HtmlWindow(self)
@@ -140,6 +147,10 @@ class TransactionDisplay(wx.Panel):
     def BindWidgets(self):
         self.printBtn.Bind(wx.EVT_BUTTON, self.OnPrint)
 
+    def OnFormatterChanged(self, formatterPlugin):
+        self.transactionFormatterPlugin=formatterPlugin
+        self.UpdateDisplay(self.currentTransaction)
+
     def OnPrint(self, evt):
         #self.printer.GetPrintData().SetPaperId(wx.PAPER_LETTER)
         self.printer.PrintText(self.html.GetParser().GetSource())
@@ -148,6 +159,7 @@ class TransactionDisplay(wx.Panel):
         self.html.SetPage('')
 
     def UpdateDisplay(self, transaction):
+        self.currentTransaction = transaction
 
         if transaction is NULL_TRANSACTION:
             html="""<html><body>
@@ -168,86 +180,11 @@ class TransactionDisplay(wx.Panel):
             </body>
             </html>
             """
-            self.html.SetPage(html)
-            return
+        else:
+            html=self.transactionFormatterPlugin\
+                    .plugin_object.format(transaction)
 
-        vals ={ a:getattr(transaction,a)
-                for a in ('id','date','type','info','units') }
-        vals['info'] = text_to_html(vals['info'])
-
-        html = """
-        <html><body>
-        <table width="100%" cellpadding="0" cellspacing="10" border="0">
-            <tr>
-                <td width="50%" valign="top">
-                    <b>Id</b> : {id}
-                </td>
-                <td width="50%" valign="top">
-                    <b> Date </b> : {date:%d, %b %Y}
-                </td>
-            </tr>
-            <tr>
-                <td columnspan=2>
-                <b>Type</b> : {type}
-                </td>
-            </tr>
-            <tr>
-                <td columnspan="2">
-                <b>Info</b> : {info}
-                </td>
-            </tr>
-
-        </table>
-
-        """.format(**vals)
-
-        isSale = vals['type'] == SALE
-
-        html += """<table width="100%", border="1" cellpadding="5" cellspacing="0">
-                <tr>
-                <th>Sr No.</th>
-                <th>Description</th>
-                <th>Qty</th>
-                <th>Rate</th>
-                {}
-                <th>Total</th>
-            </tr>""".format("<th>Discount</th>" if isSale else "")
-
-        rows = []
-        grand_totals=dict(qty=0, discount=0, total=0)
-        for i,u in enumerate(vals['units']):
-            total = unit_total(u)
-            grand_totals['qty'] += u.qty
-            grand_totals['discount'] += u.discount
-            grand_totals['total'] += total
-            row = """<tr>
-                    <td>{index}</td>
-                    <td>{u.item.name}</td>
-                    <td>{u.qty}</td>
-                    <td>{u.item.price:0.2f}</td>
-                    {discount_str}
-                    <td>{total:0.2f}</td>
-                    </tr>
-                """.format(index=i+1, u=u, total=total,
-                    discount_str="<td>{:0.2f}</td>".format(u.discount)
-                            if isSale else '')
-            rows.append(row)
-
-        html += '\n'.join(rows) + """
-            <tr>
-            <td colspan="2" align="center">Grand Total</td>
-            <td>{qty}</td>
-            <td></td>
-            {total_discount_str}
-            <td>{total:0.2f}</td>
-            </tr>""".format(
-            total_discount_str="<td>{:0.2f}</td>".format(grand_totals['discount'])
-                                if isSale else '',
-                        **grand_totals)
-
-        html += """</table></body></html>"""
         self.html.SetPage(html)
-
 
 class HistoryViewer(wx.Frame):
     def __init__(self, backend, parent):

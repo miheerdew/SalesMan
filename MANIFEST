@@ -7,6 +7,8 @@ setup.py
 bin/salesman
 salesman/__init__.py
 salesman/__main__.py
+salesman/basedir.py
+salesman/plugintypes.py
 salesman/test.py
 salesman/lib/__init__.py
 salesman/lib/constants.py
@@ -27,3 +29,5 @@ salesman/lib/gui/item_viewer.py
 salesman/lib/gui/transaction_maker.py
 salesman/lib/gui/autogen/__init__.py
 salesman/lib/gui/autogen/dialogs.py
+salesman/plugins/default_plugin.py
+salesman/plugins/default_plugin.yapsy-plugin

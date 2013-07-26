@@ -26,11 +26,11 @@ from yapsy.IPlugin import IPlugin
 from .dialogs import ExceptionDialog
 from ..models import Application as AppBackend
 from ..models import UserError
-from ..utils import ensure_dir_exists
+from ..utils import ensure_dir_exists, pub
 from .MainFrame import MainFrame
-from ...plugintypes import IStatementFormatter
+from ...plugintypes import IStatementFormatter, ITransactionFormatter
 from ..constants import *
-
+from ...basedir import BASEDIR
 
 def guiExceptionHandler(type, value, tb):
     if type == UserError:
@@ -45,27 +45,24 @@ def guiExceptionHandler(type, value, tb):
     dlg.ShowModal()
     dlg.Destroy()
 
-def safelyGet(config, section, name):
-    if config.has_section(section) and config.has_option(section, name):
-        return config.get(section, name)
-    return None
-
-def easilySet(config, section, name, value):
-    if not config.has_section(section):
-        config.add_section(section)
-    config.set(section, name, value)
-
 class Application(wx.App):
     def OnInit(self):
         self.SetAppName(APP_NAME)
         sys.excepthook = guiExceptionHandler
         self.sp = wx.StandardPaths.Get()
-        self.pluginDirs = [self.sp.GetPluginsDir(),
-                os.path.join(self.sp.GetUserDataDir(),PLUGINS_DIR_NAME)]
-        self.configFiles = [
-                    os.path.join(d,APP_CONFIG_FILE) for d in
-                        (self.sp.GetConfigDir(), self.sp.GetUserConfigDir())]
+
+        self.pluginDirs = [
+                self.sp.GetPluginsDir(),
+                os.path.join(self.sp.GetUserDataDir(),PLUGINS_DIR_NAME),
+                os.path.join(BASEDIR,PLUGINS_DIR_NAME)]
+
         self.userConfigDir = self.sp.GetUserConfigDir()
+        self.globalConfigDir = self.sp.GetConfigDir()
+
+        self.configFiles = [
+                os.path.join(d,APP_CONFIG_FILE) for d in
+                (self.userConfigDir, self.globalConfigDir)]
+
         self._readConfig()
         self._loadPlugins()
         self._setupBackendAndMainFrame()
@@ -76,27 +73,40 @@ class Application(wx.App):
         self._addCurrentSessionToConfig()
         self.saveUserConfig()
 
-    def getStatementFormatterPluginName(self):
-        name = self.getConfig(STATEMENT_FORMATTER_SECTION_NAME, NAME)
+    def setPluginPreference(self, category, name):
+        previous = self.getPluginNameFromConfig(category)
+        self.setConfig(PLUGINS_SECTION_NAME, category, name)
+        try:
+            pub.sendMessage(category,
+                formatterPlugin=self.getPluginFromConfig(category))
+        except:
+            #Rollback
+            self.setConfig(PLUGINS_SECTION_NAME, category, previous)
+            raise
+
+
+    def getPluginNameFromConfig(self, category):
+        name = self.getConfig(PLUGINS_SECTION_NAME, category)
         if not name:
-            self.setConfig( STATEMENT_FORMATTER_SECTION_NAME, NAME,
-                            DEFAULT_STATEMENT_FORMATTER_NAME)
-            name = DEFAULT_STATEMENT_FORMATTER_NAME
+            self.setConfig( PLUGINS_SECTION_NAME, category,
+                            DEFAULT_PLUGIN_NAME)
+            name = DEFAULT_PLUGIN_NAME
         return name
 
-    def getStatementFormatterPlugin(self):
-        name = self.getStatementFormatterPluginName()
+    def getPluginFromConfig(self, category):
+        name = self.getPluginNameFromConfig(category)
         manager = PluginManagerSingleton.get()
-        plugin = manager.getPluginByName(name, STATEMENT_FORMATTER)
+        plugin = manager.getPluginByName(name, category)
         if plugin is None:
-            raise UserError("Cannot find plugin with name {}".format(name))
+            raise UserError("Cannot find plugin of category : "
+                            "{} , name : {}".format(category, name))
         return plugin
-
 
     def _loadPlugins(self):
         manager = PluginManagerSingleton.get()
         manager.setPluginPlaces(self.pluginDirs)
-        manager.setCategoriesFilter({STATEMENT_FORMATTER:IStatementFormatter})
+        manager.setCategoriesFilter({STATEMENT_FORMATTER:IStatementFormatter,
+                                    TRANSACTION_FORMATTER:ITransactionFormatter})
         manager.collectPlugins()
 
     def _readConfig(self):
@@ -106,7 +116,7 @@ class Application(wx.App):
     def _addCurrentSessionToConfig(self):
         dbpath = self.backend.GetDBFilePath()
         if dbpath:
-            easilySet(self.config, LAST_SESSION_SECTION_NAME, PATH, dbpath)
+            self.setConfig(LAST_SESSION_SECTION_NAME, PATH, dbpath)
 
     def saveUserConfig(self):
         ensure_dir_exists(self.userConfigDir)
@@ -132,10 +142,15 @@ class Application(wx.App):
                 self.backend.OpenDatabase(dbpath)
 
     def getConfig(self, section, name):
-        return safelyGet(self.config, section, name)
+        if (self.config.has_section(section) and
+            self.config.has_option(section, name)):
+            return self.config.get(section, name)
 
     def setConfig(self, section, name, value):
-        return easilySet(self.config, section, name, value)
+        if not self.config.has_section(section):
+            self.config.add_section(section)
+        self.config.set(section, name, value)
+
 
 class ApplicationWithDebugger(Application):
     def __init__(self, redirect=True):
