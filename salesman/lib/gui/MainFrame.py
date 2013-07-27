@@ -163,7 +163,7 @@ class MainFrame(wx.Frame):
 
             startDate, endDate = dlg.GetDates()
             path = dlg.GetPath()
-            plugin = wx.GetApp().getStatementFormatterPlugin()
+            plugin = wx.GetApp().getPluginFromConfig(STATEMENT_FORMATTER)
             self.backend.GenerateStatement(path, startDate, endDate,
                     plugin.plugin_object.format)
             self.statusbar.PushStatusText('Generated statement file "{}"'
