@@ -25,13 +25,15 @@ class StatementCreationWizard ( wx.Dialog ):
 		bSizer1 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.html = wx.html.HtmlWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
+		self.html.SetMinSize( wx.Size( 500,250 ) )
+		
 		bSizer1.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
 		
 		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Set Dates" ), wx.VERTICAL )
 		
 		bSizer2 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Start Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_RIGHT )
+		self.m_staticText1 = wx.StaticText( self, wx.ID_ANY, u"Start Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.m_staticText1.Wrap( -1 )
 		bSizer2.Add( self.m_staticText1, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
@@ -43,7 +45,7 @@ class StatementCreationWizard ( wx.Dialog ):
 		
 		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"End Date", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText11 = wx.StaticText( self, wx.ID_ANY, u"End Date", wx.DefaultPosition, wx.DefaultSize, wx.ALIGN_CENTRE )
 		self.m_staticText11.Wrap( -1 )
 		bSizer21.Add( self.m_staticText11, 1, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5 )
 		
@@ -108,7 +110,7 @@ class SettingsDialog ( wx.Dialog ):
 	def __init__( self, parent ):
 		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = u"Settings", pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
 		
-		self.SetSizeHintsSz( wx.Size( 500,400 ), wx.DefaultSize )
+		self.SetSizeHintsSz( wx.Size( 500,250 ), wx.DefaultSize )
 		
 		bSizer6 = wx.BoxSizer( wx.VERTICAL )
 		
@@ -119,11 +121,13 @@ class SettingsDialog ( wx.Dialog ):
 		gbSizer1.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
 		
 		self.pluginsHtml = wx.html.HtmlWindow( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.html.HW_SCROLLBAR_AUTO )
+		self.pluginsHtml.SetMinSize( wx.Size( 500,250 ) )
+		
 		gbSizer1.Add( self.pluginsHtml, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 10 )
 		
 		self.m_staticText5 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Statement Formatter", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText5.Wrap( -1 )
-		gbSizer1.Add( self.m_staticText5, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 10 )
+		gbSizer1.Add( self.m_staticText5, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 10 )
 		
 		self.m_staticText6 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Transaction Formatter", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText6.Wrap( -1 )
