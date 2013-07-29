@@ -22,13 +22,14 @@ import traceback
 import ConfigParser
 from yapsy.PluginManager import PluginManagerSingleton
 from yapsy.IPlugin import IPlugin
+from yapsy.VersionedPluginManager import VersionedPluginManager
 
 from .dialogs import ExceptionDialog
 from ..models import Application as AppBackend
 from ..models import UserError
 from ..utils import ensure_dir_exists, pub
 from .MainFrame import MainFrame
-from ...plugintypes import IStatementFormatter, ITransactionFormatter
+from ...plugintypes import categories as pluginCategories
 from ..constants import *
 from ...basedir import BASEDIR
 
@@ -106,10 +107,12 @@ class Application(wx.App):
         return plugin
 
     def _loadPlugins(self):
+        PluginManagerSingleton.setBehaviour([
+                    VersionedPluginManager,
+        ])
         manager = PluginManagerSingleton.get()
         manager.setPluginPlaces(self.pluginDirs)
-        manager.setCategoriesFilter({STATEMENT_FORMATTER:IStatementFormatter,
-                                    TRANSACTION_FORMATTER:ITransactionFormatter})
+        manager.setCategoriesFilter(pluginCategories)
         manager.collectPlugins()
 
     def _readConfig(self):

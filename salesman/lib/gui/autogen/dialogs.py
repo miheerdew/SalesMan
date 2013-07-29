@@ -143,6 +143,15 @@ class SettingsDialog ( wx.Dialog ):
 		self.statementFormatter.SetSelection( 0 )
 		gbSizer1.Add( self.statementFormatter, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
 		
+		self.m_staticText51 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Init File Parser", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText51.Wrap( -1 )
+		gbSizer1.Add( self.m_staticText51, wx.GBPosition( 3, 0 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 10 )
+		
+		initParserChoices = []
+		self.initParser = wx.Choice( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, initParserChoices, 0 )
+		self.initParser.SetSelection( 0 )
+		gbSizer1.Add( self.initParser, wx.GBPosition( 3, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
+		
 		
 		gbSizer1.AddGrowableCol( 1 )
 		gbSizer1.AddGrowableRow( 0 )

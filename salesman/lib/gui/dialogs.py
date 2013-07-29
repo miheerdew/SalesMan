@@ -35,8 +35,10 @@ class SettingsDialog(auto.SettingsDialog):
 
         self.pluginCtrlMap = {
                         STATEMENT_FORMATTER:self.statementFormatter,
-                        TRANSACTION_FORMATTER:self.transactionFormatter
+                        TRANSACTION_FORMATTER:self.transactionFormatter,
+                        INIT_PARSER:self.initParser
                         }
+
         self.app = wx.GetApp()
         manager = PluginManagerSingleton.get()
 

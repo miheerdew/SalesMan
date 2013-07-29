@@ -33,6 +33,33 @@ from .topics import *
 
 DATE_FORMAT='%d/%m/%Y'
 
+def DEFAULT_INIT_PARSER(fd):
+    dialect = csv.Sniffer().sniff(fd.read(1024))
+    fd.seek(0)
+    reader = csv.DictReader(fd, dialect=dialect)
+    items = []
+    permitted = {'name','qty','price','description','category'}
+    fnames=set(map(normalizeString,reader.fieldnames))
+    if not ( fnames <=  permitted):
+        e_msg = ('Cannot process file {} '.format(csvfile),
+        'Cannot recognize fieldnames {}'.format(list(fnames - permitted)) +
+        'The fieldnames should only be from {},'.format(list(permitted)))
+        raise UserError(*e_msg)
+
+    for i,row in enumerate(reader):
+        line_num = i+2
+        args = {normalizeString(k):standardizeString(v) for k,v in row.items()}
+        try:
+            args['qty']=int(args['qty'])
+            args['price']=float(args['price'])
+        except ValueError:
+            e_msg = ('Cannot process file {} '.format(csvfile),
+                'Cannot convert string to numeric'
+                'value at line {}'.format(line_num))
+            raise UserError(*e_msg)
+        items.append(Item(**args))
+    return items
+
 def DEFAULT_STATEMENT_FORMATTER(items, statement, startDate, endDate):
         header1 = ['Statement : {1:{0}} - {2:{0}}'.\
                     format(DATE_FORMAT, startDate, endDate),
@@ -178,14 +205,8 @@ class Application(ToggleableMethods):
                                     ADD_TRANSACTION,
                                     QUERY_ITEMS,
                                     QUERY_TRANSACTIONS)
-    methods_to_enable_on_open_database = (INIT_DATABASE,
-                                    UNDO,
-                                    GENERATE_STATEMENT,
-                                    GET_HISTORY,
-                                    GET_CATEGORIES,
-                                    ADD_TRANSACTION,
-                                    QUERY_ITEMS,
-                                    QUERY_TRANSACTIONS)
+    methods_to_enable_on_open_database = (
+                                    )
     def __init__(self):
         ToggleableMethods.__init__(self)
         self.core = None
@@ -212,6 +233,20 @@ class Application(ToggleableMethods):
     def GetCategories(self):
         return self.categories
 
+    def _getMethodsToEnableOnOpenDatabase(self):
+        l = [UNDO,
+        GENERATE_STATEMENT,
+        GET_HISTORY,
+        GET_CATEGORIES,
+        ADD_TRANSACTION,
+        QUERY_ITEMS,
+        QUERY_TRANSACTIONS]
+
+        if self.core.QT().count() == 0:
+            l.append(INIT_DATABASE)
+
+        return l
+
     @run_if_enabled
     @threadsafe
     def OpenDatabase(self, dbfile):
@@ -225,7 +260,7 @@ class Application(ToggleableMethods):
             self.core = Core(self.engine)
             self.categories = set(i.category for i in self.core.QI())
             self.batchDisable([])
-            self.batchEnable(self.methods_to_enable_on_open_database)
+            self.batchEnable(self._getMethodsToEnableOnOpenDatabase())
             self.notifyChange()
 
         except sqlalchemy.exc.DBAPIError:
@@ -235,43 +270,19 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     @threadsafe
-    def InitDatabase(self, csvfile):
+    def InitDatabase(self, initFile, parser=DEFAULT_INIT_PARSER):
         try:
             items = []
             opened = False
-            if isinstance(csvfile, basestring):
-                fd = open(csvfile, 'rb')
+            fileName = None
+            if isinstance(initFile, basestring):
+                fd = open(initFile, 'rb')
+                fileName = initFile
                 opened = True
             else:
-                fd = csvfile
-
+                fd = initFile
             try:
-                dialect = csv.Sniffer().sniff(fd.read(1024))
-                fd.seek(0)
-                reader = csv.DictReader(fd, dialect=dialect)
-
-                permitted = {'name','qty','price','description','category'}
-                fnames=set(map(normalizeString,reader.fieldnames))
-                if not ( fnames <=  permitted):
-                    e_msg = ('Cannot process file {} '.format(csvfile),
-                    'Cannot recognize fieldnames {}'.format(list(fnames - permitted)) +
-                    'The fieldnames should only be from {},'.format(list(permitted)))
-                    raise UserError(*e_msg)
-
-                for i,row in enumerate(reader):
-                    line_num = i+2
-                    args = {normalizeString(k):standardizeString(v) for k,v in row.items()}
-
-                    try:
-                        args['qty']=int(args['qty'])
-                        args['price']=float(args['price'])
-                    except ValueError:
-                        e_msg = ('Cannot process file {} '.format(csvfile),
-                            'Cannot convert string to numeric'
-                            'value at line {}'.format(line_num))
-                        raise UserError(*e_msg)
-
-                    items.append(Item(**args))
+                items=list(parser(fd))
             finally:
                 if opened: fd.close()
 
@@ -344,7 +355,7 @@ class Application(ToggleableMethods):
             fd = statementFile
 
         writer = csv.writer(fd, delimiter=',',
-                    quotechar="'", quoting=csv.QUOTE_MINIMAL)
+                    quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
 
         try:
             for row in formatter(self.core.QI(), statement,
@@ -369,6 +380,8 @@ class Application(ToggleableMethods):
         self.undo_stack.pop()
         if len(self.undo_stack) == 0:
             self.disable(REDO)
+        if last:
+            self.disable(INIT_DATABASE)
         self.notifyChange()
 
     def _copyTransaction(self, transaction):
@@ -401,6 +414,8 @@ class Application(ToggleableMethods):
         self.undo_stack.append(transactions_to_be_undone)
         if not self.isEnabled(REDO):
             self.enable(REDO)
+        if self.core.QT().count() == 0:
+            self.enable(INIT_DATABASE)
         self.notifyChange()
 
     @run_if_enabled
@@ -444,6 +459,7 @@ class Application(ToggleableMethods):
 
         if type == ADDITION:
             self.categories |= set(u.item.category for u in units)
+        self.batchDisable([INIT_DATABASE])
         self.notifyChange()
         return id
 
