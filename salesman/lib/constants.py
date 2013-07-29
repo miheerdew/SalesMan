@@ -46,12 +46,16 @@ LAST_SESSION_SECTION_NAME='Last Session'
 PLUGINS_SECTION_NAME='Plugins'
 TRANSACTION_FORMATTER='Transaction Formatter'
 STATEMENT_FORMATTER='Statement Formatter'
+INIT_PARSER='Init Parser'
+
 NAME='name'
 PATH='path'
+CSV='CSV'
 APP_CONFIG_FILE=APP_NAME+".conf"
 PLUGINS_DIR_NAME='plugins'
 DEFAULT_PLUGIN_MAP={
         STATEMENT_FORMATTER:'Default Statement Formatter',
-        TRANSACTION_FORMATTER: 'Default Transaction Formatter'
+        TRANSACTION_FORMATTER: 'Default Transaction Formatter',
+        INIT_PARSER:'Default Init Parser'
         }
 

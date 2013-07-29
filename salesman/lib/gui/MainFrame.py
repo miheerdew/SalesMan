@@ -15,7 +15,7 @@
 
 import wx
 import os
-
+from functools import partial
 from .dialogs import StatementCreationWizard, SettingsDialog
 from ..utils import pub, silent_remove, get_save_path_from_dialog
 from ..topics import *
@@ -150,7 +150,9 @@ class MainFrame(wx.Frame):
                 style=wx.FD_OPEN|wx.FD_FILE_MUST_EXIST)
 
         if dlg.ShowModal() == wx.ID_OK:
-            self.backend.InitDatabase(dlg.GetPath())
+            plugin = wx.GetApp().getPluginFromConfig(INIT_PARSER)
+            parser = partial(plugin.plugin_object.parse,CSV)
+            self.backend.InitDatabase(dlg.GetPath(),parser=parser)
             self.statusbar.PushStatusText('Initialized database from file "{}"'\
                     .format(dlg.GetPath()))
 

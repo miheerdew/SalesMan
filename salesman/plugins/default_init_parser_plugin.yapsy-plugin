@@ -1,0 +1,9 @@
+[Core]
+Name = Default Init Parser
+Module = default_init_parser_plugin
+
+[Documentation]
+Author = Miheer Dewaskar
+Version = 0.1
+Website = https://github.com/miheerdew/SalesMan
+Description = The Default Plugin supplied with Salesman
