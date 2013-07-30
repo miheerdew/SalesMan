@@ -101,7 +101,7 @@ class TransactionViewer(ListCtrl):
         self.count = transactions.count() + 1
         self.SetItemCount(self.count)
         self.transactions = transactions
-        self.RefreshItems(0,self.count)
+        self.RefreshItems(0,self.count-1)
         self.Select(self.count-1)
 
     def OnGetItemAttr(self, row):

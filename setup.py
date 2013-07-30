@@ -3,7 +3,7 @@ setup(
      name='SalesMan',
      version=open('VERSION.txt').read().strip(),
      packages=['salesman','salesman.lib','salesman.lib.gui',
-                                'salesman.lib.gui.autogen'],
+                'salesman.plugins','salesman.lib.gui.autogen'],
      package_data = {'salesman':['plugins/*.*']},
      license='GPLv3',
      include_package_data = True,

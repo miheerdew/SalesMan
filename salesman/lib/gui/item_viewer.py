@@ -38,7 +38,7 @@ class ItemViewer(ListCtrl):
         count = items.count()
         self.SetItemCount(count)
         self.items = items
-        self.RefreshItems(0,count)
+        self.RefreshItems(0,count-1)
 
     def OnGetItemText(self ,row, col):
         return getattr(self.items[row],self.attrs[col])
