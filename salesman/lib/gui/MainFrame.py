@@ -14,6 +14,8 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import wx
+from wx.lib.wordwrap import wordwrap
+
 import os
 from functools import partial
 from .dialogs import StatementCreationWizard, SettingsDialog
@@ -25,6 +27,7 @@ from .transaction_maker import TransactionMaker
 from . import images
 from yapsy.PluginManager import PluginManagerSingleton
 from ..models import UserError
+from ... import about
 
 class MenuItemToggleListener:
     def __init__(self, menuItem):
@@ -78,6 +81,11 @@ class MainFrame(wx.Frame):
                     (
                         ('Settings\tCTRL+T', wx.NewId(), self.OnSettings ),
                     )
+                ),
+                ('Help',
+                    (
+                        ('About',wx.ID_ABOUT,self.OnAbout),
+                    )
                 )
         )
 
@@ -97,6 +105,16 @@ class MainFrame(wx.Frame):
                     pub.subscribe(self.togglers[item], mi[3])
             menubar.Append(menu, menuLabel)
         self.SetMenuBar(menubar)
+
+    def OnAbout(self, evt):
+        info = wx.AboutDialogInfo()
+        for a in ('Name','Version','Copyright','WebSite','Developers'):
+            setattr(info,a,getattr(about,a))
+
+        for b,w  in (('License',700),('Description',500)):
+            setattr(info,b,wordwrap(getattr(about,b),w,
+                    wx.ClientDC(self)))
+        wx.AboutBox(info)
 
     def OnExit(self, evt):
         self.Close()
