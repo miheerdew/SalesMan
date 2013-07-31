@@ -13,12 +13,13 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
-import wxversion
-wxversion.select("2.8")
+import sys
+if not hasattr(sys,'frozen'):
+    import wxversion
+    wxversion.select("2.8")
 import wx
 import wx.lib.inspection
 import os
-import sys
 import traceback
 import ConfigParser
 from yapsy.PluginManager import PluginManagerSingleton
