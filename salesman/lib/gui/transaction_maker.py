@@ -76,7 +76,7 @@ class TransactionMaker(wx.Panel):
         return [(self.typeLabel,(0,0),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
                 (self.typeCtrl,(0,1),(1,1),wx.EXPAND),
                 (self.dateLabel,(0,5),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
-                (self.dateCtrl, (0,6),(1,1),wx.EXPAND),
+                (self.dateCtrl, (0,6),(1,1)),
                 (self.infoLabel, (1,0),(1,1),wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL),
                 (self.infoCtrl, (1,1), (2,4), wx.EXPAND),
                 (self.nameLabel, (3,0),(1,3),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
@@ -87,7 +87,7 @@ class TransactionMaker(wx.Panel):
                 (self.priceCtrl, (4,5), (1,1),wx.ALIGN_CENTER),
                 (self.qtyLabel, (3,6),(1,1),wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL),
                 (self.qtyCtrl, (4,6), (1,1),wx.ALIGN_CENTER),
-                (hbox2, (5,4),(1,2),wx.ALIGN_RIGHT),
+                (hbox2, (5,4),(1,3),wx.ALIGN_RIGHT),
                 (hbox1,(5,0),(1,1), wx.ALIGN_LEFT),
                 (self.confirmBtn,(5,1),(1,1),wx.EXPAND),
                 (self.resetBtn,(5,2),(1,1),wx.EXPAND),
@@ -116,8 +116,8 @@ class TransactionMaker(wx.Panel):
     def PlaceControls(self):
         self.sizer = wx.GridBagSizer(vgap=10, hgap=10)
         self.sizer.AddMany(self.PlacementData())
-        for i in range(1,7):
-            self.sizer.AddGrowableCol(i,1)
+        for i in range(1,5):
+            self.sizer.AddGrowableCol(i)
         self.sizer.AddGrowableRow(6,10)
         self.sizer.AddGrowableRow(2,1)
         self.SetSizer(self.sizer)
@@ -175,7 +175,7 @@ class TransactionMaker(wx.Panel):
 
         self.dateLabel = wx.StaticText(self, label='Date')
         self.dateCtrl = wx.DatePickerCtrl(self, style=wx.DP_DROPDOWN
-                                      | wx.DP_SHOWCENTURY)
+                                      | wx.DP_SHOWCENTURY, size=(200,-1))
 
         self.infoLabel = wx.StaticText(self, label='Info')
         self.infoCtrl = wx.TextCtrl(self, style=wx.TE_MULTILINE)

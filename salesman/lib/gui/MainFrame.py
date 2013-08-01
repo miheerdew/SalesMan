@@ -51,7 +51,7 @@ class MainFrame(wx.Frame):
         pub.subscribe(self.OnAddTransactionToggle, ADD_TRANSACTION)
         pub.subscribe(self.OnTransactionAdded, TRANSACTION_ADDED)
         sizer.Add(self.transaction_maker,1,wx.EXPAND)
-        self.SetSizer(sizer)
+        self.SetSizerAndFit(sizer)
         self.SetIcons(images.GetIconBundleFromImage(images.getAppIconImage()))
 
 
