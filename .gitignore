@@ -1,6 +1,6 @@
 *.py[cod]
-#*.spec
-#*.fbp
+*.spec
+*.fbp
 # C extensions
 *.so
 MANIFEST
@@ -9,15 +9,15 @@ MANIFEST
 *.egg-info
 dist
 build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
+#eggs
+#parts
+#bin
+#var
+#sdist
+#develop-eggs
 .installed.cfg
-lib
-lib64
+#lib
+#lib64
 __pycache__
 
 # Installer logs
@@ -35,4 +35,4 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
-log*
+#log*

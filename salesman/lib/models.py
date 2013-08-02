@@ -145,55 +145,87 @@ class UserError(Exception):
     def GetMessage(self):
         return self.message
 
-class WrapItems:
-    """A wrapper around session.query(Item) object.
+class WrapQuery(object):
+    """A wrapper around session.query(TableMapper) object.
 
-    It implements a minimal api, of the query object. It has provision
-    to provide different attributes via supplied dictionaries
+    It implements a minimal api, of the query object.
     """
-    def __init__(self, items, quantities={}, strict=False):
-        """Create the wrapped query object.
-
-        The :param quantities: dictionary is of the form {item_key:qty}.
-        If :param strict: is true , then all items not in :param quantities:
-        will not be included in the query object
-        """
-        if strict:
-            self._items = items.filter(Item.id.in_(quantities))
-        else:
-            self._items = items
-        self._qty = quantities
+    def __init__(self, query):
+        """Create the wrapped query object."""
+        self._query = query
 
     def first(self):
-        i = self._items.first()
+        i = self._query.first()
         if i is not None:
             return self.modify(i)
 
     def all(self):
-        return [self.modify(i) for i in self._items.all()]
+        return [self.modify(i) for i in self._query.all()]
 
     def get(self, i):
-        return self.modify(self._items.get(i))
+        return self.modify(self._query.get(i))
 
     def filter(self, *args, **kargs):
-        return WrapItems(self._items.filter(*args, **kargs),
-                          self._qty)
+        return self.wrap(self._query.filter(*args, **kargs))
 
     def count(self):
-        return self._items.count()
+        return self._query.count()
+
+    def __getitem__(self, index):
+        return self.modify(self._query[index])
+
+    def __iter__(self):
+        for entry in self._query:
+            yield self.modify(entry)
+
+    #Methods that can be overwridden
+    def wrap(self, query):
+        """Return a wrapped object from query"""
+        return type(self)(query)
+
+    def modify(self, entry):
+        """A modification hook, which can decide what to return when
+        entry should be returned."""
+        raise entry
+
+def copyTransaction(transaction):
+        """Make a copy of transaction"""
+        new_units = []
+        for unit in transaction.units:
+            new_item = Item(**{a:getattr(unit.item,a)
+                        for a in ('id','name','price','category','qty')})
+            new_unit = Unit(item=new_item, **{a:getattr(unit,a)
+                        for a in ('qty','discount','type')})
+            new_unit.item = new_item
+            new_units.append(new_unit)
+
+        return Transaction(units=new_units,**{a:getattr(transaction,a)
+                    for a in ('id','date','info','type')})
+
+class WrapTransactions(WrapQuery):
+    """A custom wrapper around session.query(Transaction) object.
+    """
+    def modify(self, transaction):
+        return copyTransaction(transaction)
+
+
+class WrapItems(WrapQuery):
+    """A custom wrapper around session.query(Item) object.
+    """
+    def __init__(self, items, quantities={}, strict=False):
+        if strict:
+            items = items.filter(Item.id.in_(quantities))
+        self._qty = quantities
+        super(WrapItems,self).__init__(items)
+
+    def wrap(self, items):
+        return WrapItems(items, self._qty)
 
     def modify(self, item):
         item = copy.copy(item)
         if item is not None and item.id in self._qty:
             item.qty = self._qty[item.id]
         return item
-
-    def __getitem__(self, index):
-        return self.modify(self._items[index])
-
-    def __iter__(self):
-        for item in self._items:
-            yield self.modify(item)
 
 class Application(ToggleableMethods):
     methods_to_disable_on_startup = (INIT_DATABASE,
@@ -472,7 +504,7 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     def QueryTransactions(self):
-        return self.core.QueryTransactions()
+        return WrapTransactions(self.core.QueryTransactions())
 
     def notifyChange(self):
         self.notifyItemChange()

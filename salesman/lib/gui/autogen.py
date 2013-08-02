@@ -10,6 +10,9 @@
 import wx
 import wx.xrc
 import wx.html
+from .ItemViewer import ItemViewer
+from .TransactionViewer import TransactionViewer
+from .TransactionDisplay import TransactionDisplay
 
 ###########################################################################
 ## Class StatementCreationWizard
@@ -189,5 +192,97 @@ class SettingsDialog ( wx.Dialog ):
 	# Virtual event handlers, overide them in your derived class
 	def OnSaveButtonClick( self, event ):
 		event.Skip()
+	
+
+###########################################################################
+## Class HistoryViewer
+###########################################################################
+
+class HistoryViewer ( wx.Frame ):
+	
+	def __init__( self, parent ):
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.Size( 700,500 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		
+		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		
+		bSizer1 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_splitter1 = wx.SplitterWindow( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter1.SetSashGravity( 0.6 )
+		self.m_splitter1.Bind( wx.EVT_IDLE, self.m_splitter1OnIdle )
+		
+		self.m_panel1 = wx.Panel( self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel1, wx.ID_ANY, u"Item Viewer" ), wx.VERTICAL )
+		
+		self.item_viewer=ItemViewer(self.m_panel1)
+		sbSizer1.Add( self.item_viewer, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		self.m_panel1.SetSizer( sbSizer1 )
+		self.m_panel1.Layout()
+		sbSizer1.Fit( self.m_panel1 )
+		self.m_panel2 = wx.Panel( self.m_splitter1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer2 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_splitter2 = wx.SplitterWindow( self.m_panel2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.SP_3D )
+		self.m_splitter2.SetSashGravity( 0.3 )
+		self.m_splitter2.Bind( wx.EVT_IDLE, self.m_splitter2OnIdle )
+		
+		self.m_panel4 = wx.Panel( self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer3 = wx.BoxSizer( wx.VERTICAL )
+		
+		sbSizer3 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel4, wx.ID_ANY, u"Transaction Viewer" ), wx.VERTICAL )
+		
+		self.transaction_viewer = TransactionViewer(self.m_panel4)
+		sbSizer3.Add( self.transaction_viewer, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		bSizer3.Add( sbSizer3, 1, wx.EXPAND, 5 )
+		
+		
+		self.m_panel4.SetSizer( bSizer3 )
+		self.m_panel4.Layout()
+		bSizer3.Fit( self.m_panel4 )
+		self.m_panel5 = wx.Panel( self.m_splitter2, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		bSizer8 = wx.BoxSizer( wx.VERTICAL )
+		
+		sbSizer4 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel5, wx.ID_ANY, u"Transaction Display" ), wx.VERTICAL )
+		
+		self.transaction_display=TransactionDisplay(self.m_panel5)
+		sbSizer4.Add( self.transaction_display, 1, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		bSizer8.Add( sbSizer4, 1, wx.EXPAND, 5 )
+		
+		
+		self.m_panel5.SetSizer( bSizer8 )
+		self.m_panel5.Layout()
+		bSizer8.Fit( self.m_panel5 )
+		self.m_splitter2.SplitHorizontally( self.m_panel4, self.m_panel5, 0 )
+		bSizer2.Add( self.m_splitter2, 1, wx.EXPAND, 5 )
+		
+		
+		self.m_panel2.SetSizer( bSizer2 )
+		self.m_panel2.Layout()
+		bSizer2.Fit( self.m_panel2 )
+		self.m_splitter1.SplitVertically( self.m_panel1, self.m_panel2, 0 )
+		bSizer1.Add( self.m_splitter1, 1, wx.EXPAND, 5 )
+		
+		
+		self.SetSizer( bSizer1 )
+		self.Layout()
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
+	
+	def m_splitter1OnIdle( self, event ):
+		self.m_splitter1.SetSashPosition( 0 )
+		self.m_splitter1.Unbind( wx.EVT_IDLE )
+	
+	def m_splitter2OnIdle( self, event ):
+		self.m_splitter2.SetSashPosition( 0 )
+		self.m_splitter2.Unbind( wx.EVT_IDLE )
 	
 

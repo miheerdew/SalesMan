@@ -14,7 +14,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 
-from .autogen import dialogs as auto
+from . import autogen as auto
 import wx
 import os
 from ..utils import wxdate_to_pydate, get_save_path_from_dialog

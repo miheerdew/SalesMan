@@ -22,8 +22,8 @@ from .dialogs import StatementCreationWizard, SettingsDialog
 from ..utils import pub, silent_remove, get_save_path_from_dialog
 from ..topics import *
 from ..constants import *
-from .history_viewer import HistoryViewer
-from .transaction_maker import TransactionMaker
+from .HistoryViewer import HistoryViewer
+from .TransactionMaker import TransactionMaker
 from . import images
 from yapsy.PluginManager import PluginManagerSingleton
 from ..models import UserError

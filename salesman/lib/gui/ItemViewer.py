@@ -28,8 +28,9 @@ class ItemViewer(ListCtrl):
         for i,t in enumerate(self.headers):
             self.InsertColumn(i,t[0])
             self.SetColumnWidth(i,t[1])
-            self.setResizeColumn(2)
-            self.SetItemCount(0)
+
+        self.setResizeColumn(2)
+        self.SetItemCount(0)
 
     def GetItemAt(self, index):
         return self.items[index]
