@@ -78,7 +78,12 @@ class TransactionViewer(ListCtrl):
         self.SetItemCount(self.count)
         self.transactions = transactions
         self.RefreshItems(0,self.count-1)
+        self.doSelect(self.count-1)
+
+    def doSelect(self, idx):
         self.Select(self.count-1)
+        self.Focus(self.count-1)
+        PostTransactionSelectedEvent(self,self.getSelectedTransaction())
 
     def OnGetItemAttr(self, row):
         if row == self.count-1:
