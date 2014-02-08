@@ -408,7 +408,7 @@ class Application(ToggleableMethods):
     def Redo(self):
         last = self.undo_stack[-1]
         self.core.AddBatchTransactions(last)
-        #Pop the last transaction if not errors are raised
+        #Pop the last transaction if no errors are raised
         self.undo_stack.pop()
         if len(self.undo_stack) == 0:
             self.disable(REDO)
