@@ -18,7 +18,7 @@ function usage(){
     -h          show this help
     -w          build windows Executable
     -n          build native executable
-    -s          Do not build source dist
+    -s          Build source dist
 
     Without any options nothing will be done
 _EOF
