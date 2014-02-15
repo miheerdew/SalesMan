@@ -83,11 +83,11 @@ class NameCtrlWithItemAutoComplete(wx.TextCtrl):
         self.dropdownlistbox.UpdateDisplay(match)
         itemcount = min( count, 7 ) + 2
         charheight = self.dropdownlistbox.GetCharHeight()
-        height = itemcount*charheight
+        height = max(itemcount*charheight, self.dropdownlistbox.GetBestSize().height)
         width = max(self.GetSize().width, self.dropdownlistbox.GetSize().width)
         size = (width,height)
-        self.dropdownlistbox.SetSize(size)
-        self.dropdown.SetClientSize(size)
+        self.dropdownlistbox.SetClientSize(size)
+        self.dropdown.SetClientSize(self.dropdownlistbox.GetSize())
 
     def SetValueWithoutDropdown(self, value):
         self.SetValue(value)
