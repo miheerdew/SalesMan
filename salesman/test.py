@@ -94,6 +94,14 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(self.core.QueryItems().count(),len(items))
 
+    def test_add_new_item_without_qty_in_item(self):
+        self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
+                                units=[Unit(qty=10, type=ADDITION,
+                                        item=Item(name='One Piece',
+                                                category='Manga',
+                                                price=500))])
+        self.assertEqual(self.core.QI().filter(Item.name=='One Piece').first().qty,10)
+
     def test_batch_transaction(self):
         ids1= [self.core.AddTransaction(**i) for i in self.get_transaction_data()]
         state1 = self.get_state()
@@ -414,7 +422,7 @@ class TestApp(unittest.TestCase):
                 ('abc in python', BOOK, 40, 10, 'For Developers'),
             ]
 
-        items = [ Item(name=a,category=b,price=c,qty=d,description=e)
+        self.items = [ Item(name=a,category=b,price=c,qty=d,description=e)
                     for a,b,c,d,e in l ]
 
         fd = BytesIO()
@@ -425,15 +433,16 @@ class TestApp(unittest.TestCase):
 
         self.core.InitDatabase(fd)
 
+    def test_init_database(self):
         for i,j in enumerate(self.core.QueryItems()):
             for k in ('name','category','price','qty','description'):
-                a1=getattr(items[i],k)
+                a1=getattr(self.items[i],k)
                 a2=getattr(j,k)
                 if isinstance(a1,basestring):
                     a1 = standardizeString(a1)
                 self.assertEqual(a1,a2)
 
-        self.assertEqual(self.core.QueryItems().count(),len(items))
+        self.assertEqual(self.core.QueryItems().count(),len(self.items))
 
     def test_initial_disables(self):
         app = Application()
@@ -700,6 +709,26 @@ class TestApp(unittest.TestCase):
                     )
                 ]
 
+    def test_insert_with_undo_redo(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        self.assertEqual(self.core.QI().get(2).qty,20)
+        self.assertEqual(self.core.QI().get(1).qty,77)
+        self.core.Undo(2)
+        self.core.AddTransaction(date=date(2013,2,1),info='an insert',
+                                units=[Unit(item_id=2,qty=1,type=SALE),
+                                    Unit(item_id=1,qty=27,type=SALE)])
+        self.assertEqual(self.core.QI().get(2).qty,19)
+        self.assertEqual(self.core.QI().get(1).qty,0)
+        self.core.Redo()
+        self.assertEqual(self.core.QI().get(2).qty,19)
+        self.assertEqual(self.core.QI().get(1).qty,50)
+        self.assertEqual(self.core.QueryTransactions().get(2).info,'an insert')
+
+    def test_init_database_with_undo_redo(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+
 
     def test_undo(self):
         initial_state = self.get_state()
@@ -745,6 +774,32 @@ class TestApp(unittest.TestCase):
             self.core.Redo()
             self.assertEqual(self.get_state(),s)
 
+    def test_add_new_item_without_qty_in_item(self):
+        self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
+                                units=[Unit(qty=10, type=ADDITION,
+                                        item=Item(name='One Piece',
+                                                category='Manga',
+                                                price=500))])
+        self.assertEqual(self.core.QI().filter(
+                                Item.name=='One Piece').first().qty,10)
+
+    def test_redo_with_change_in_item_id(self):
+        self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
+                            units=[Unit(qty=10,type=ADDITION,
+                            item=Item(name='OnePiece',category='Manga',price=500)
+                                    )])
+        self.core.Undo(0)
+        self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
+                            units=[Unit(qty=5,type=ADDITION,
+                            item=Item(name='Bleach',category='Manga',price=100)
+                                    )])
+        self.core.Redo()
+        op = self.core.QI().filter(Item.name == 'OnePiece').first()
+        bl = self.core.QI().filter(Item.name == 'Bleach').first()
+
+        self.assertEqual(op.qty,10)
+        self.assertEqual(bl.qty,5)
+
     def test_single_redo(self):
         for t in self.get_transaction_data():
             start1 = self.get_state()
@@ -759,18 +814,6 @@ class TestApp(unittest.TestCase):
         self.core.Undo(1)
         self.core.Redo()
         self.assertEqual(self.get_state(),state)
-
-    def get_transaction_data(self):
-        return [dict(date=date(2013,1,1),
-                    info='Happy New Year',
-                    units=[Unit(item_id=1,qty=3,discount=20,type=SALE)]),
-                dict(date=date(2013,2,1),
-                        units=[Unit(item_id=1,qty=20,type=ADDITION)]),
-                dict( date=date(2013,3,1),
-                        units=[Unit(item_id=1,qty=30,type=ADDITION)]
-                    )
-                ]
-
 
     def get_state(self):
         return ( self.core.QueryItems().all(),

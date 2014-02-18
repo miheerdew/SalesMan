@@ -303,6 +303,7 @@ class Application(ToggleableMethods):
     @run_if_enabled
     @threadsafe
     def InitDatabase(self, initFile, parser=DEFAULT_INIT_PARSER):
+        """Is enabled only when the trasaction count is zero."""
         try:
             items = []
             opened = False
@@ -406,6 +407,14 @@ class Application(ToggleableMethods):
     @run_if_enabled
     @threadsafe
     def Redo(self):
+        """
+        Undo just pops the transactions in a stack. Redo just adds back the
+        transactions in the last element of the stack.
+
+        Undo-Redo can be used to insert a transaction at an old point.
+        Just Undo the transaction you want to insert before. Add a new transaction,
+        then just Redo.
+        """
         last = self.undo_stack[-1]
         self.core.AddBatchTransactions(last)
         #Pop the last transaction if no errors are raised
@@ -434,6 +443,15 @@ class Application(ToggleableMethods):
     @run_if_enabled
     @threadsafe
     def Undo(self, transaction):
+        """
+        Undo just pops all the transactions after (including) transaction into
+        a stack. Redo can be used to add the last batch undone back.
+
+        Undo-Redo can be used to insert a transaction at an old point.
+        Just Undo the transaction you want to insert before. Add a new transaction,
+        then just Redo.
+        """
+
         if isinstance(transaction,Transaction):
             i = transaction.id
         else:

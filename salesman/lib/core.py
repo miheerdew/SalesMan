@@ -241,7 +241,7 @@ class Core:
     def doTransaction(self, transaction):
         """Actually perform the addition/subtraction
         in the transaction, assuming that all the units
-        have their itme_id set properly
+        have their item_id set properly
         """
         for u in transaction.units:
             assert isinstance(u.item_id, int)
@@ -306,7 +306,8 @@ class Core:
     def Undo(self,transaction_id):
         """Undo everything after (and including)
         the transaction with transaction_id: id. Here
-        negetive id is used for access from back"""
+        negetive id is used for access from back. A transaction_id of zero,
+        will definitely clear all the transactions"""
 
         transaction_id = self.getAbsoluteTransactionId(transaction_id)
         for t in self.descendTransactions(transaction_id):
