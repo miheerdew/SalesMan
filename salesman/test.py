@@ -22,7 +22,7 @@ from collections import namedtuple
 from datetime import date
 from sqlalchemy import create_engine
 from .lib.core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
-from .lib.models import Application
+from .lib.models import Application, TransactionMaker
 from .lib.utils import setter, FunctionDisabledError, standardizeString
 from .lib.core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
 from .lib.schema import Base, Item, Transaction, Unit
@@ -819,7 +819,63 @@ class TestApp(unittest.TestCase):
         return ( self.core.QueryItems().all(),
                 self.core.QueryTransactions().all() )
 
+class TestTransactionMaker(unittest.TestCase):
+        def setUp(self):
+                self.backend = Application()
+                self.backend.OpenDatabase(':memory:')
+                fd = BytesIO()
+                w = csv.writer(fd)
+                w.writerow(['name','category','price','qty',
+                                'description'])
+                self.i = [('Abc for Kids', BOOK, 20, 30,'For kids'),
+                           ('KnR',BOOK,200,10,'For devs')]
+                w.writerows(self.i)
+                fd.seek(0)
+                self.backend.InitDatabase(fd)
+                self.tm = TransactionMaker(self.backend)
+
+        def test_makes_a_successful_transaction(self):
+            j = self.i[0]
+            self.tm.AddItem(j[0],j[1],j[2],qty=1)
+            self.tm.MakeTransaction(date(2012,1,1),'')
+            self.assertEqual(self.backend.QI().get(1).qty, 29)
+
+        def test_adding_empty_transaction_raises_Disabled_Error(self):
+            with self.assertRaises(FunctionDisabledError):
+                self.tm.ChangeType(ADDITION)
+                self.tm.MakeTransaction(date(2012,1,1),'')
+
+        def test_raises_Disabled_Error_on_empty_transaction_list(self):
+            j = self.i[0]
+            self.tm.AddItem(j[0],j[1],j[2],qty=1)
+            with self.assertRaises(FunctionDisabledError):
+                self.tm.AddItem(j[0],j[1],j[2],qty=0)
+                self.tm.MakeTransaction(date(2012,1,1),'')
+
+        def test_does_not_raise_Disabled_Error_when_one_item_is_removed(
+                                                                self):
+            self.tm.AddItem(*self.i[0][:3],qty=1)
+            self.tm.AddItem(*self.i[1][:3],qty=1)
+            self.tm.AddItem(*self.i[0][:3],qty=0)
+            self.tm.MakeTransaction(date(2012,1,1),'')
+            self.assertEqual(self.backend.QI().get(1).qty, self.i[0][3])
+            self.assertEqual(self.backend.QI().get(2).qty,
+                            self.i[1][3]-1)
+
+        def test_does_disable_on_reset(self):
+            self.tm.AddItem(*self.i[0][:3],qty=1)
+            self.tm.Reset()
+            with self.assertRaises(FunctionDisabledError):
+                self.tm.MakeTransaction(date(2011,1,1),'')
+
+
+
+
+
+
+
 class SetterDecoratorTester(unittest.TestCase):
+
     def test_basic_functionality(self):
         class A:
             @setter('a1','b1','c1')

@@ -16,7 +16,8 @@
 import wx
 from wx.lib import masked
 from ..models import TransactionMaker as TransactionMakerModel
-from ..topics import TRANSACTION_MAKER, TYPE_CHANGED, UNITS_CHANGED, TRANSACTION_CHANGED
+from ..topics import TRANSACTION_MAKER, TYPE_CHANGED, UNITS_CHANGED,\
+                        TRANSACTION_CHANGED, MAKE_TRANSACTION
 from ..utils import pub, wxdate_to_pydate
 from ..core import ADDITION, SALE, GIFT, TRANSFER, unit_total
 from .common import ListCtrl
@@ -34,12 +35,13 @@ class TransactionMaker(wx.Panel):
     def __init__(self, backend, parent):
         wx.Panel.__init__(self, parent, style=wx.SUNKEN_BORDER|wx.TAB_TRAVERSAL)
         self.backend = backend
-        self.model = TransactionMakerModel(backend)
         self.CreateControls()
         self.PlaceControls()
         self.SetTabOrder()
         pub.subscribe(self.OnUnitsChanged,UNITS_CHANGED)
         pub.subscribe(self.OnTransactionsChanged,TRANSACTION_CHANGED)
+        pub.subscribe(self.OnMakeTransactionToggle,MAKE_TRANSACTION)
+        self.model = TransactionMakerModel(backend)
 
     def SetTabOrder(self):
         order = self.TabOrderData()
@@ -48,8 +50,13 @@ class TransactionMaker(wx.Panel):
 
     def Toggle(self, enable=True):
         for x in self.GetChildren():
-            x.Enable(enable)
-            x.Refresh()
+            if x is not self.confirmBtn:
+                    x.Enable(enable)
+                    x.Refresh()
+
+    def OnMakeTransactionToggle(self, enabled):
+        self.confirmBtn.Enable(enabled)
+        self.confirmBtn.Refresh()
 
     def ItemAutoFill(self, item):
         #Automatically fill data from item

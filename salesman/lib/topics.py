@@ -13,6 +13,7 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
+MAKE_TRANSACTION='MakeTransaction'
 ADD_TRANSACTION='AddTransaction'
 OPEN_DATABSE='OpenDatabase'
 INIT_DATABASE='InitDatabase'

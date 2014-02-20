@@ -534,18 +534,22 @@ class Application(ToggleableMethods):
     def notifyItemChange(self):
         pub.sendMessage(ITEM_CHANGED, items=WrapItems(self.core.QI()))
 
-class TransactionMaker:
+
+class TransactionMaker(ToggleableMethods):
     def __init__(self, backend):
+        ToggleableMethods.__init__(self)
         self.backend = backend
         self.type = SALE
         self.units = {}
         self.NotifyChanges()
+        self.disable(MAKE_TRANSACTION)
 
     def NotifyChanges(self):
         pub.sendMessage(UNITS_CHANGED, units=self.units.values(), type=self.type)
 
     def Reset(self):
         self.units = {}
+        self.disable(MAKE_TRANSACTION)
         self.NotifyChanges()
 
     def ChangeType(self, type):
@@ -559,13 +563,18 @@ class TransactionMaker:
         item_sig = (name,category,price)
         if qty <= 0 and (item_sig in self.units):
             del self.units[item_sig]
+            if not self.units:
+                self.disable(MAKE_TRANSACTION)
 
         elif qty > 0:
             self.units[item_sig] = Unit(item=Item(name=name,
                                         category=category, price=price),
                             type=self.type, qty=qty, discount=discount)
+            self.enable(MAKE_TRANSACTION)
+
         self.NotifyChanges()
 
+    @run_if_enabled
     def MakeTransaction(self, date, info):
         id = self.backend.AddTransaction(date, self.units.values(), info, self.type)
         pub.sendMessage(TRANSACTION_ADDED, id=id)
