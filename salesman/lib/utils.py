@@ -91,31 +91,50 @@ def dict_as_called(function, args, kwargs):
                 params[names[-len(defaults) + pos]] = value
 
     return params
-def setter(*attrs):
-    """A decorator generator,which sets the attrs on the object
-    using arguments from the function call
 
-    >>>class A
-    ... @setter('a','b','c')
-    ... def __init__(self, a, b, c):
-    ...   print (self.a, self.c, self.b)
+def setter(*names):
+    """Returns a decorator, which sets the names given as arguments
+    (to setter) on the object using arguments from the function call,
+    and then calls the original function. Note that all the names
+    must be present as function arguments.
+
+    For Example
+
+    >>> class A:
+    ...     @setter('a','b','c')
+    ...     def __init__(self, a, b, c):
+    ...         pass
+    ...     @setter('d', 'e')
+    ...     def func(self, d, e=1, f=2):
+    ...         self.d, self.e, d, e
+    ...         assert f == 2
+    ...     @setter('d')
+    ...     def func2(self):
+    ...        pass
     ...
-    >>>obj=A('f',False,3)
-    ('f',3,False)
-    >>>obj.a
-    'f'
-    >>>obj.b
-    False
-    >>>obj.c
-    3
+    >>> o=A(1,2,3)
+    >>> o.a, o.b, o.c
+    (1, 2, 3)
+    >>> o.d
+    Traceback (most recent call last):
+    AttributeError: A instance has no attribute 'd'
+    >>> o.func(e=3,d=3)
+    >>> o.d, o.e
+    (3, 3)
+    >>> o.f
+    Traceback (most recent call last):
+    AttributeError: A instance has no attribute 'f'
+    >>> o.func2()
+    Traceback (most recent call last):
+    AssertionError: 'd' not found in arguments
     """
     def decorator(func):
         @functools.wraps(func)
         def new_func(*args, **kwargs):
             self = args[0]
             params = dict_as_called(func, args, kwargs)
-            for a in attrs:
-                assert a in params, repr(a)+" not in "+repr(params)
+            for a in names:
+                assert a in params, "{!r} not found in arguments".format(a)
                 setattr(self, a, params[a])
             return func(*args, **kwargs)
         return new_func
@@ -159,7 +178,9 @@ class FunctionDisabledError(Exception):
 
 def run_if_enabled(func):
         """A decorator that runs a function only if it is enabled.
-        To be used on methods of a subclass of ToggelableMethods"""
+        To be used on objects of type ToggelableMethods.
+
+        """
         @functools.wraps(func)
         def new_func(self, *args, **kargs):
             name = func.__name__
@@ -213,14 +234,22 @@ def get_save_path_from_dialog(dlg, extension=None):
     return path
 
 def normalizeString(string):
-    """Normalized a string,
+    r"""Converts a string to a reasonable normal form.
 
-    >>normalizeString("asd  Adsbs \t  \n Bd a   ")
+    >>> normalizeString("asd  Adsbs \t  \n Bd a   ")
     'asd adsbs bd a'
     """
     return ' '.join(w.lower() for w in string.split())
 
 def standardizeString(string):
-    """A standardized string is a normalized string with some
-    standard.(ie it looks respectible to see unlike a normal string)"""
+    r"""Gives a beautified version of the normalization of the string.
+
+    Currently Just converts the normalized form into title case.
+    >>> standardizeString("asd  Adsbs \t  \n Bd a   ")
+    'Asd Adsbs Bd A'
+    """
     return normalizeString(string).title()
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
