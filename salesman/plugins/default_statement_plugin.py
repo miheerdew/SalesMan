@@ -1,5 +1,5 @@
 from salesman.lib.schema import Item
-from salesman.lib.core import SALE, unit_total
+from salesman.lib.core import SALE, OTHER_TYPES as OTHERS, unit_total
 from salesman.lib.utils import text_to_html
 import salesman.plugintypes as pt
 
@@ -15,8 +15,7 @@ class StatementFormatter(pt.IStatementFormatter):
                     'Opening',None,
                     'Additions',None,
                     'Sales',None,None,
-                    'Transfers',None,
-                    'Gifts',None,
+                ] + [ j for i in OTHERS for j in (i.title(),None) ] + [
                     'Closing',None,
                     ]
 
@@ -24,8 +23,7 @@ class StatementFormatter(pt.IStatementFormatter):
                     'Qty','Total',                          #Opening
                     'Qty','Total',                          #Additions
                     'Qty','Discount','Total',               #Sales
-                    'Qty','Total',                          #Transfers
-                    'Qty','Total',                          #Gifts
+                  ] + ['Qty','Total']*len(OTHERS) + [
                     'Qty','Total',                          #Closing
                 ]
 
@@ -33,8 +31,7 @@ class StatementFormatter(pt.IStatementFormatter):
                             None, 0,                    #Opening
                             None, 0,                    #Additions
                             None, 0, 0,                 #Sales
-                            None, 0,                    #Transfers
-                            None, 0,                    #Gifts
+                         ] + [None,0]*len(OTHERS) + [
                             None, 0,                    #Closing
                         ]
 
@@ -42,8 +39,7 @@ class StatementFormatter(pt.IStatementFormatter):
                     '', 0,                              #Opening
                     '', 0,                              #Additions
                     '', 0, 0,                           #Sales
-                    '', 0,                              #Transfers
-                    '', 0,                              #Gifts
+                   ] + ['',0]*len(OTHERS) + [
                     '', 0,                              #Closing
 
                 ]
@@ -54,13 +50,13 @@ class StatementFormatter(pt.IStatementFormatter):
                 r = statement[item.id]
                 p = item.price
 
-                row = [i+1, item.name, item.category, p ,    #Item info
-                r.opening, r.opening*p,                     #Opening
-                r.additions, r.additions*p,                 #Additions
-                r.sales, r.discount, r.sales*p - r.discount,#Sales
-                r.transfers, r.transfers*p,                 #Transfers
-                r.gifts, r.gifts*p,                         #Gifts
-                r.closing, r.closing*p,                     #Closing
+                row = [i+1, item.name, item.category, p ,               #Item info
+                r['opening'], r['opening']*p,                            #Opening
+                r['additions'], r['additions']*p,                        #Additions
+                r['sales'], r['discount'], r['sales']*p - r['discount'], #Sales
+                    ] + [j for i in OTHERS for j in (r[i],r[i]*p)] + [
+                r['closing'], r['closing']*p,                           #Closing
+                
                 ]
 
                 yield row

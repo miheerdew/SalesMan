@@ -19,7 +19,7 @@ from ..models import TransactionMaker as TransactionMakerModel
 from ..topics import TRANSACTION_MAKER, TYPE_CHANGED, UNITS_CHANGED,\
                         TRANSACTION_CHANGED, MAKE_TRANSACTION
 from ..utils import pub, wxdate_to_pydate
-from ..core import ADDITION, SALE, GIFT, TRANSFER, unit_total
+from ..core import ADDITION, SALE, OTHER_TYPES, unit_total
 from .common import ListCtrl
 from .auto_complete_controls import \
                             TextCtrlAutoComplete as TextCtrlAC,\
@@ -28,7 +28,7 @@ from .events import EVT_ITEM_SELECTED, PostItemSelectedEvent
 from . import images
 from ..utils import standardizeString
 
-TYPE_LIST = ADDITION, SALE, GIFT, TRANSFER
+TYPE_LIST = [ADDITION, SALE] + OTHER_TYPES
 DEFAULT_TYPE = SALE
 
 class TransactionMaker(wx.Panel):

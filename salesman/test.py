@@ -24,12 +24,13 @@ from sqlalchemy import create_engine
 from .lib.core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
 from .lib.models import Application, TransactionMaker
 from .lib.utils import setter, FunctionDisabledError, standardizeString
-from .lib.core import ADDITION, SALE, GIFT, TRANSFER, StatementRow
+from .lib.core import ADDITION, SALE, OTHER_TYPES
 from .lib.schema import Base, Item, Transaction, Unit
 from .lib.schema import ClearTable
 from .lib.models import UserError
 import sqlalchemy
 
+GIFT, TRANSFER, LIBRARY = OTHER_TYPES
 BOOK = 'Books'
 EBOOK = 'EBooks'
 CD = 'CD/DVD'
@@ -145,8 +146,9 @@ class TestCore(unittest.TestCase):
                         price=120, category=BOOK),
                     2,
                     ADDITION),
+                    (1,1, LIBRARY)
                 ),
-                ADDITION
+                None
             ),
             (
                 date(2012,1,3),
@@ -160,76 +162,82 @@ class TestCore(unittest.TestCase):
 
         statement=self.core.GenerateStatement()
         expected = dict(opening=  [30,20,10,10, 0],
-                        closing=  [28,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 4, 2],
                         sales=    [ 2, 0, 0, 0, 1],
                         discount= [ 8, 0, 0, 0,10],
                         gifts=    [ 0, 2, 0, 0, 0],
-                        transfers=[ 0, 0, 3, 0, 0])
+                        transfers=[ 0, 0, 3, 0, 0],
+                        library=  [ 1, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
 
 
         statement = self.core.GenerateStatement(ids[1],ids[2])
         expected = dict(opening=  [29,18, 7,14, 0],
-                        closing=  [28,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 2],
                         sales=    [ 1, 0, 0, 0, 1],
                         discount= [ 4, 0, 0, 0,10],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 1, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
 
 
         statement = self.core.GenerateStatement(ids[2],ids[2])
-        expected = dict(opening=  [29,18, 7,14, 2],
-                        closing=  [28,18, 7,14, 1],
+        expected = dict(opening=  [28,18, 7,14, 2],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 1, 0, 0, 0, 1],
                         discount= [ 4, 0, 0, 0,10],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library  =[ 0, 0, 0, 0, 0])
 
 
         statement = self.core.GenerateStatement(4,4)
-        expected = dict(opening=  [28,18, 7,14, 1],
-                        closing=  [28,18, 7,14, 1],
+        expected = dict(opening=  [27,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 0, 0, 0, 0, 0],
                         discount= [ 0, 0, 0, 0, 0],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 0, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
 
         statement = self.core.GenerateStatement(5,5)
-        expected = dict(opening=  [28,18, 7,14, 1],
-                        closing=  [28,18, 7,14, 1],
+        expected = dict(opening=  [27,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 0, 0, 0, 0, 0],
                         discount= [ 0, 0, 0, 0, 0],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 0, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
 
 
         statement = self.core.GenerateStatement(3,2)
-        expected = dict(opening=  [29,18, 7,14, 2],
-                        closing=  [29,18, 7,14, 2],
+        expected = dict(opening=  [28,18, 7,14, 2],
+                        closing=  [28,18, 7,14, 2],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 0, 0, 0, 0, 0],
                         discount= [ 0, 0, 0, 0, 0],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 0, 0, 0, 0, 0])
         self.check_for_statement(statement, expected)
 
 
     def check_for_statement(self, statement, expected):
         for k,v in statement.items():
-            for a in v.attrs:
-                self.assertEqual(getattr(v,a), expected[a][k-1])
+            for a in v:
+                self.assertEqual(v[a], expected[a][k-1])
 
     def test_different_kinds_of_units(self):
         units = [Unit(item_id=1,qty=1,type=SALE),

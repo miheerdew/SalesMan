@@ -26,8 +26,7 @@ EPSILON=0.1
 
 ADDITION = 'additions'
 SALE = 'sales'
-GIFT = 'gifts'
-TRANSFER = 'transfers'
+OTHER_TYPES = ['gifts', 'transfers', 'library']
 
 
 def unit_total(unit):
@@ -36,12 +35,6 @@ def unit_total(unit):
         discount = unit.discount
 
     return unit.item.price*unit.qty-discount
-
-class StatementRow(Record):
-
-    attrs = ['opening','closing','additions',
-            'gifts','transfers','sales','discount']
-
 
 
 class ItemNotFoundError(Exception):
@@ -137,9 +130,9 @@ class Core:
         statement = {}
 
         for transaction_id, qty in self.getHistory(start).items():
-            statement[transaction_id] = StatementRow(opening=qty,
-                closing=qty, discount=0, additions=0, gifts=0,
-                transfers=0, sales=0)
+            statement[transaction_id] = dict(opening=qty,
+                closing=qty, discount=0, additions=0, sales=0,
+                **{t:0 for t in OTHER_TYPES})
 
         for t in self.QT().\
           filter(and_(Transaction.id >= start, Transaction.id <= end)).\
@@ -149,15 +142,15 @@ class Core:
                 row = statement[u.item_id]
 
                 #The types have been named appropriately for this
-                setattr(row, u.type, getattr(row, u.type) + u.qty)
+                row[u.type] = row[u.type] + u.qty
 
                 if u.type == ADDITION:
-                    row.closing += u.qty
+                    row['closing'] += u.qty
                 else:
-                    row.closing -= u.qty
+                    row['closing'] -= u.qty
 
                 if u.type == SALE:
-                    row.discount += u.discount
+                    row['discount'] += u.discount
 
         return statement
 

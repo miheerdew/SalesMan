@@ -24,7 +24,7 @@ import copy
 import threading
 import sqlalchemy
 
-from .core import Core, SALE, ADDITION, GIFT, TRANSFER
+from .core import Core, SALE, ADDITION
 from .core import TimeLineError, ItemNotFoundError, ItemNotAvailableError
 from .schema import Transaction, Item, Unit
 from .utils import threadsafe, ToggleableMethods, run_if_enabled, pub,\

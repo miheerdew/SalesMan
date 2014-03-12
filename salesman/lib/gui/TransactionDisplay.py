@@ -2,7 +2,6 @@ import wx
 from wx import html
 from ..utils import pub
 from datetime import date
-from ..core import ADDITION, SALE, GIFT, TRANSFER, unit_total
 from ..constants import NULL_TRANSACTION, TRANSACTION_FORMATTER
 
 class TransactionDisplay(wx.Panel):

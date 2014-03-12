@@ -1,7 +1,6 @@
 import wx
 from datetime import date
 from .common import ListCtrl
-from ..core import ADDITION, SALE, GIFT, TRANSFER, unit_total
 from .events import EVT_TRANSACTION_SELECTED, PostTransactionSelectedEvent,\
                      EVT_TRANSACTION_UNDO, PostTransactionUndoEvent
 from ..topics import TRANSACTION_CHANGED, REDO
