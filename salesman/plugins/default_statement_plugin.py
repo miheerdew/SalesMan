@@ -28,11 +28,11 @@ class StatementFormatter(pt.IStatementFormatter):
                 ]
 
         summable_entries = [ None, None, None, None,   #Item info
-                            None, 0,                    #Opening
+                            0, 0,                    #Opening
                             None, 0,                    #Additions
                             None, 0, 0,                 #Sales
                          ] + [None,0]*len(OTHERS) + [
-                            None, 0,                    #Closing
+                            0, 0,                    #Closing
                         ]
 
         last_row = ['Total',None, None, None,          #Item info
