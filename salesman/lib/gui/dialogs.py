@@ -25,13 +25,18 @@ from yapsy.PluginManager import PluginManagerSingleton
 class SettingsDialog(auto.SettingsDialog):
     def __init__(self, parent):
         super(SettingsDialog,self).__init__(parent)
-
+        
+        pluginPaths = wx.GetApp().GetPluginPlaces()
+        
         self.pluginsHtml.SetPage(
         """
         <html>
-        <body><h3 align="center">Select Plugins</h3><body>
+        <body><h3 align="center">Select Plugins</h3>
+        You can add customized plugins by placing them in the following 
+        directories <ul><li>{}<li>{}</ul>
+        <body>
         </html>
-        """)
+        """.format(*pluginPaths))
 
         self.pluginCtrlMap = {
                         STATEMENT_FORMATTER:self.statementFormatter,
@@ -121,6 +126,9 @@ class StatementCreationWizard(auto.StatementCreationWizard):
 
     def GetPath(self):
         return self.path
+    
+    def WantChangesOnly(self):
+        return self.changesCheck.IsChecked()
 
 class ExceptionDialog(wx.Dialog):
     def __init__(self, parent, message='', reason='', fulldetails='',

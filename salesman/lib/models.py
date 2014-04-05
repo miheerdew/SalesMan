@@ -347,7 +347,7 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     def GenerateStatement(self, statementFile, startDate, endDate,
-                            formatter=DEFAULT_STATEMENT_FORMATTER):
+                    formatter=DEFAULT_STATEMENT_FORMATTER, changes_only=False):
         e_reason = None
         if not isinstance(startDate, datetime.date):
             e_reason = 'start date is Invalid'
@@ -373,7 +373,7 @@ class Application(ToggleableMethods):
         end = last_transaction.id if last_transaction else 0
         start = first_transaction.id if first_transaction else end+1
 
-        statement = self.core.GenerateStatement(start, end)
+        statement = self.core.GenerateStatement(start, end, relative=changes_only)
 
         opened = False
         if isinstance(statementFile,basestring):

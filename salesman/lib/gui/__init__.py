@@ -74,11 +74,14 @@ class Application(wx.App):
         self._setupBackendAndMainFrame()
         self._tryToOpenLastSession()
         return True
-
+    
     def OnExit(self):
         self._addCurrentSessionToConfig()
         self.saveUserConfig()
 
+    def GetPluginPlaces(self):
+        return self.pluginDirs[:-1]
+        
     def setPluginPreference(self, category, name):
         previous = self.getPluginNameFromConfig(category)
         self.setConfig(PLUGINS_SECTION_NAME, category, name)
@@ -133,10 +136,10 @@ class Application(wx.App):
 
     def _setupBackendAndMainFrame(self):
         self.backend=AppBackend()
-        mainFrame = MainFrame(self.backend,None)
+        self.mainFrame = MainFrame(self.backend,None)
         self.backend.Initialize()
-        mainFrame.Show(True)
-        mainFrame.Maximize() #For working with pyinstaller on windows
+        self.mainFrame.Show(True)
+        self.mainFrame.Maximize() #For working with pyinstaller on windows
 
     def _tryToOpenLastSession(self):
         try:
@@ -147,7 +150,7 @@ class Application(wx.App):
     def _openLastSession(self):
             dbpath=self.getConfig(LAST_SESSION_SECTION_NAME, PATH)
             if dbpath and os.path.isfile(dbpath):
-                self.backend.OpenDatabase(dbpath)
+                self.mainFrame.OpenDatabase(dbpath)
 
     def getConfig(self, section, name):
         if (self.config.has_section(section) and

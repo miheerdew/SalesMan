@@ -131,17 +131,17 @@ class MainFrame(wx.Frame):
 
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-
-            self.backend.OpenDatabase(path)
-
-            self.statusbar.PushStatusText('Opened database file "{}"'\
-                    .format(path))
-
-            self.SetTitle('{} :{}'.format(MAIN_FRAME_TITLE,path))
+            self.OpenDatabase(path)
 
         dlg.Destroy()
 
+    def OpenDatabase(self, path):
+            self.backend.OpenDatabase(path)
+            self.statusbar.PushStatusText('Opened database file "{}"'\
+                    .format(path))
+            self.SetTitle('{} :{}'.format(MAIN_FRAME_TITLE,path))
 
+    
     def OnCreateDatabase(self, evt):
         dlg = wx.FileDialog(self, message="Create Database file..",
                 wildcard=DB_FILE_WILD_CARD,
@@ -185,7 +185,7 @@ class MainFrame(wx.Frame):
             path = dlg.GetPath()
             plugin = wx.GetApp().getPluginFromConfig(STATEMENT_FORMATTER)
             self.backend.GenerateStatement(path, startDate, endDate,
-                    plugin.plugin_object.format)
+                plugin.plugin_object.format, changes_only=dlg.WantChangesOnly())
             self.statusbar.PushStatusText('Generated statement file "{}"'
                                             .format(path))
 

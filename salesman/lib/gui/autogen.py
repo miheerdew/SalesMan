@@ -32,6 +32,14 @@ class StatementCreationWizard ( wx.Dialog ):
 		
 		bSizer1.Add( self.html, 1, wx.ALL|wx.EXPAND, 5 )
 		
+		bSizer9 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.changesCheck = wx.CheckBox( self, wx.ID_ANY, u"Show changes only", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer9.Add( self.changesCheck, 0, wx.ALL|wx.EXPAND, 5 )
+		
+		
+		bSizer1.Add( bSizer9, 0, wx.EXPAND, 5 )
+		
 		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self, wx.ID_ANY, u"Set Dates" ), wx.VERTICAL )
 		
 		bSizer2 = wx.BoxSizer( wx.HORIZONTAL )

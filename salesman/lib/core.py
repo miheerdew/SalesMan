@@ -27,6 +27,7 @@ EPSILON=0.1
 ADDITION = 'additions'
 SALE = 'sales'
 OTHER_TYPES = ['gifts', 'transfers', 'library']
+TYPES=[ADDITION, SALE] + OTHER_TYPES
 
 
 def unit_total(unit):
@@ -98,6 +99,9 @@ class Core:
 
         Returns {id:qty}
         if transaction_id ==0 then , transaction_id=infinity
+        
+        if true_history is True then those Items that where first
+        added after transaction_id are not shown.
         """
 
         transaction_id = self.getAbsoluteTransactionId(transaction_id)
@@ -123,14 +127,22 @@ class Core:
         return quantities
 
     @threadsafe
-    def GenerateStatement(self, start=1, end=-1):
+    def GenerateStatement(self, start=1, end=-1, relative=False):
+        """Returns a dictionary with item_ids as keys and dict as values.
+        Each value dict has the following keys
+        (opening,closing,discount,additions,sales,*OTHER_TYPES).
+        
+        If relative is True then the entries in the statement corresponding
+        to those items that are not invoved in any transactions are absent.
+        """
+        
         start = self.getAbsoluteTransactionId(start)
         end = self.getAbsoluteTransactionId(end)
 
         statement = {}
 
-        for transaction_id, qty in self.getHistory(start).items():
-            statement[transaction_id] = dict(opening=qty,
+        for item_id, qty in self.getHistory(start).items():
+            statement[item_id] = dict(opening=qty,
                 closing=qty, discount=0, additions=0, sales=0,
                 **{t:0 for t in OTHER_TYPES})
 
@@ -141,7 +153,7 @@ class Core:
             for u in t.units:
                 row = statement[u.item_id]
 
-                #The types have been named appropriately for this
+                #The keys have been named appropriately for this
                 row[u.type] = row[u.type] + u.qty
 
                 if u.type == ADDITION:
@@ -151,7 +163,13 @@ class Core:
 
                 if u.type == SALE:
                     row['discount'] += u.discount
-
+        
+        if relative:
+            #Remove the items for which there are no transactions
+            for item in statement.keys():
+                if not [1 for k in TYPES if statement[item][k] != 0]:
+                   del statement[item]
+                    
         return statement
 
 

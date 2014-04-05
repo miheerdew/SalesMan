@@ -29,24 +29,26 @@ class StatementFormatter(pt.IStatementFormatter):
 
         summable_entries = [ None, None, None, None,   #Item info
                             0, 0,                    #Opening
-                            None, 0,                    #Additions
-                            None, 0, 0,                 #Sales
-                         ] + [None,0]*len(OTHERS) + [
+                            0, 0,                    #Additions
+                            0, 0, 0,                 #Sales
+                         ] + [0,0]*len(OTHERS) + [
                             0, 0,                    #Closing
                         ]
 
         last_row = ['Total',None, None, None,          #Item info
-                    '', 0,                              #Opening
-                    '', 0,                              #Additions
-                    '', 0, 0,                           #Sales
-                   ] + ['',0]*len(OTHERS) + [
-                    '', 0,                              #Closing
+                    0, 0,                              #Opening
+                    0, 0,                              #Additions
+                    0, 0, 0,                           #Sales
+                   ] + [0,0]*len(OTHERS) + [
+                    0, 0,                              #Closing
 
                 ]
         yield header1
         yield header2
 
         for i,item in enumerate(items.order_by(Item.category)):
+                if item.id not in statement:
+                    continue
                 r = statement[item.id]
                 p = item.price
 
