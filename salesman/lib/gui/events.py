@@ -36,3 +36,9 @@ ItemSelectedEvent, EVT_ITEM_SELECTED = NewCommandEvent()
 def PostItemSelectedEvent(target,  item, qty=0, discount=0):
     evt = ItemSelectedEvent(target.GetId(),item=item, qty=qty, discount=discount)
     wx.PostEvent(target, evt)
+
+TransactionDeleteEvent, EVT_TRANSACTION_DELETE = NewCommandEvent()
+
+def PostTransactionDeleteEvent(target,  transaction):
+    evt = TransactionDeleteEvent(target.GetId(),transaction=transaction)
+    wx.PostEvent(target, evt)

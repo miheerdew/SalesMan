@@ -1,8 +1,9 @@
 import wx
 from datetime import date
 from .common import ListCtrl
-from .events import EVT_TRANSACTION_SELECTED, PostTransactionSelectedEvent,\
-                     EVT_TRANSACTION_UNDO, PostTransactionUndoEvent
+from .events import  PostTransactionSelectedEvent,\
+                     PostTransactionUndoEvent,\
+                     PostTransactionDeleteEvent
 from ..topics import TRANSACTION_CHANGED, REDO
 from ..constants import NULL_TRANSACTION
 
@@ -43,20 +44,30 @@ class TransactionViewer(ListCtrl):
         evt.Skip()
 
     def OnRightClick(self, evt):
-        if not hasattr(self, "popupID"):
-            self.popupID = wx.NewId()
-            self.Bind(wx.EVT_MENU, self.OnUndo, id=self.popupID)
+        if not hasattr(self, "undoPopup"):
+            self.undoPopup, self.delPopup = wx.NewId(), wx.NewId()
+            self.Bind(wx.EVT_MENU, self.OnUndo, id=self.undoPopup)
+            self.Bind(wx.EVT_MENU, self.OnDel, id=self.delPopup)
 
         if self.current_selection not in [None,self.count-1]:
             menu = wx.Menu()
-            menu.Append(self.popupID, "Undo selected transaction")
+            menu.Append(self.undoPopup, "Undo selected transaction")
+            menu.Append(self.delPopup, "Delete selected transaction")
             self.PopupMenu(menu)
             menu.Destroy()
 
         evt.Skip()
 
     def OnUndo(self, event):
-        PostTransactionUndoEvent(self,self.getSelectedTransaction())
+        PostTransactionUndoEvent(self, self.getSelectedTransaction())
+
+    def OnDel(self, event):
+        dlg = wx.MessageDialog(self, "Are you sure you want to delete the"
+        " selected transaction. This will also permanently delete all"
+        " transactions below (and including) the selected transaction",
+        "Confirm Delete", wx.NO_DEFAULT|wx.YES_NO)
+        if dlg.ShowModal() == wx.ID_YES:
+            PostTransactionDeleteEvent(self, self.getSelectedTransaction())
 
     def getTransactionAt(self, i):
         if i == self.count -1:

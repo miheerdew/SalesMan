@@ -15,7 +15,7 @@
 
 
 import wx
-from .events import EVT_TRANSACTION_SELECTED, EVT_TRANSACTION_UNDO
+from .events import EVT_TRANSACTION_SELECTED, EVT_TRANSACTION_UNDO, EVT_TRANSACTION_DELETE
 from ..utils import pub
 from ..topics import TRANSACTION_CHANGED, REDO
 from . import autogen as auto
@@ -47,6 +47,8 @@ class HistoryViewer(auto.HistoryViewer):
                     self.transaction_viewer)
         self.Bind(EVT_TRANSACTION_UNDO, self.OnTransactionUndo,
                     self.transaction_viewer)
+        self.Bind(EVT_TRANSACTION_DELETE, self.OnTransactionDelete,
+                    self.transaction_viewer)
 
         pub.subscribe(self.OnTransactionsChange, TRANSACTION_CHANGED)
         pub.subscribe(self.OnRedoToggled, REDO)
@@ -68,6 +70,10 @@ class HistoryViewer(auto.HistoryViewer):
     def OnTransactionUndo(self, event):
         transaction = event.transaction
         self.backend.Undo(transaction)
+
+    def OnTransactionDelete(self, event):
+        transaction = event.transaction
+        self.backend.Undo(transaction, permanent=True)
 
     def OnTransactionSelect(self, evt):
         transaction = evt.transaction

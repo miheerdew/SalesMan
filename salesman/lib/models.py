@@ -442,14 +442,17 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     @threadsafe
-    def Undo(self, transaction):
+    def Undo(self, transaction, permanent=False):
         """
-        Undo just pops all the transactions after (including) transaction into
-        a stack. Redo can be used to add the last batch undone back.
+        Undo pops all the transactions after (including) transaction from the
+        transaction stack.
 
-        Undo-Redo can be used to insert a transaction at an old point.
-        Just Undo the transaction you want to insert before. Add a new transaction,
-        then just Redo.
+        If permanent is False, it copies the undone transaction into
+        a undo_stack. Redo can be then be used to add the last batch undone
+        (with permanent=False) back.
+
+        Undo-Redo can be used to insert and delete transactions at arbitrary
+        points.
         """
 
         if isinstance(transaction,Transaction):
@@ -457,13 +460,16 @@ class Application(ToggleableMethods):
         else:
             i = int(transaction)
         i = self.core.getAbsoluteTransactionId(i)
-        transactions_to_be_undone = [self._copyTransaction(t) for t in
-                    self.core.QT().filter(Transaction.id >=i)]
         self.core.Undo(i)
-        #Put it into the undo stack if no errors are raised
-        self.undo_stack.append(transactions_to_be_undone)
-        if not self.isEnabled(REDO):
-            self.enable(REDO)
+
+        if permanent is False:
+            #Put it into the undo stack if no errors are raised
+            transactions_to_be_undone = [self._copyTransaction(t) for t in
+                    self.core.QT().filter(Transaction.id >=i)]
+            self.undo_stack.append(transactions_to_be_undone)
+            if not self.isEnabled(REDO):
+                self.enable(REDO)
+
         if self.core.QT().count() == 0:
             self.enable(INIT_DATABASE)
         self.notifyChange()
