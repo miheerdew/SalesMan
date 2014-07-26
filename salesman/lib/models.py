@@ -522,6 +522,7 @@ class Application(ToggleableMethods):
         self.notifyChange()
         return id
 
+    #TODO: Edit self.categories on Edit. Make self.categories into a multiset?
     @run_if_enabled
     @threadsafe
     def EditItem(self, item):
