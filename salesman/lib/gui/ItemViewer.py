@@ -14,9 +14,10 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import wx
-from .common import ListCtrl
+from .common import ListCtrl, TextEditMixin
+from .events import PostEditItemEvent
 
-class ItemViewer(ListCtrl):
+class ItemViewer(ListCtrl, TextEditMixin):
     def __init__(self, parent, **kargs):
         self.items = []
         self.headers = [('Id',50),('Name',50),('Category',100),('Price',75),('Qty',50)]
@@ -24,6 +25,8 @@ class ItemViewer(ListCtrl):
 
         kargs['style'] = wx.LC_REPORT|wx.LC_VIRTUAL|kargs.get('style',0)
         ListCtrl.__init__(self, parent, **kargs)
+        TextEditMixin.__init__(self,
+            editable_columns=[i for i in range(len(self.headers)-1)])
 
         for i,t in enumerate(self.headers):
             self.InsertColumn(i,t[0])
@@ -38,9 +41,13 @@ class ItemViewer(ListCtrl):
     def UpdateDisplay(self, items):
         count = items.count()
         self.SetItemCount(count)
-        self.items = items
+        self.items = list(items) # to allow assignment in SetVirtualData()
         self.RefreshItems(0,count-1)
 
-    def OnGetItemText(self ,row, col):
+    def OnGetItemText(self, row, col):
         return getattr(self.items[row],self.attrs[col])
 
+    def SetVirtualData(self, row, col, text):
+        item = self.items[row]
+        setattr(item, self.attrs[col], text)
+        PostEditItemEvent(self, item)

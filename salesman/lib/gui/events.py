@@ -19,7 +19,7 @@ import wx
 
 TransactionSelectedEvent, EVT_TRANSACTION_SELECTED = NewCommandEvent()
 
-def PostTransactionSelectedEvent(target,  transaction):
+def PostTransactionSelectedEvent(target, transaction):
     evt = TransactionSelectedEvent(target.GetId(),transaction=transaction)
     wx.PostEvent(target, evt)
 
@@ -41,4 +41,10 @@ TransactionDeleteEvent, EVT_TRANSACTION_DELETE = NewCommandEvent()
 
 def PostTransactionDeleteEvent(target,  transaction):
     evt = TransactionDeleteEvent(target.GetId(),transaction=transaction)
+    wx.PostEvent(target, evt)
+
+EditItemEvent, EVT_EDIT_ITEM = NewCommandEvent()
+
+def PostEditItemEvent(target, item):
+    evt = EditItemEvent(target.GetId(), item=item)
     wx.PostEvent(target, evt)

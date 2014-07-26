@@ -222,8 +222,9 @@ class WrapItems(WrapQuery):
         return WrapItems(items, self._qty)
 
     def modify(self, item):
-        item = copy.copy(item)
-        if item is not None and item.id in self._qty:
+        if item is None: return None
+        item = Item(**{a:getattr(item,a) for a in ('id','qty','name','category','price','description')})
+        if item.id in self._qty:
             item.qty = self._qty[item.id]
         return item
 
@@ -236,9 +237,8 @@ class Application(ToggleableMethods):
                                     GET_CATEGORIES,
                                     ADD_TRANSACTION,
                                     QUERY_ITEMS,
-                                    QUERY_TRANSACTIONS)
-    methods_to_enable_on_open_database = (
-                                    )
+                                    QUERY_TRANSACTIONS,
+                                    EDIT_ITEM)
     def __init__(self):
         ToggleableMethods.__init__(self)
         self.core = None
@@ -272,7 +272,8 @@ class Application(ToggleableMethods):
         GET_CATEGORIES,
         ADD_TRANSACTION,
         QUERY_ITEMS,
-        QUERY_TRANSACTIONS]
+        QUERY_TRANSACTIONS,
+        EDIT_ITEM]
 
         if self.core.QT().count() == 0:
             l.append(INIT_DATABASE)
@@ -421,6 +422,7 @@ class Application(ToggleableMethods):
         self.undo_stack.pop()
         if len(self.undo_stack) == 0:
             self.disable(REDO)
+            self.enable(EDIT_ITEM)
         if last:
             self.disable(INIT_DATABASE)
         self.notifyChange()
@@ -469,6 +471,7 @@ class Application(ToggleableMethods):
             self.undo_stack.append(transactions_to_be_undone)
             if not self.isEnabled(REDO):
                 self.enable(REDO)
+                self.disable(EDIT_ITEM)
 
         if self.core.QT().count() == 0:
             self.enable(INIT_DATABASE)
@@ -518,6 +521,14 @@ class Application(ToggleableMethods):
         self.batchDisable([INIT_DATABASE])
         self.notifyChange()
         return id
+
+    @run_if_enabled
+    @threadsafe
+    def EditItem(self, item):
+        if self.core.QI().get(item.id) is None:
+            raise UserError('Invalid Item with item id {}'.format(item.id))
+        self.core.EditItem(item)
+        self.notifyItemChange()
 
     @run_if_enabled
     def QueryItems(self):

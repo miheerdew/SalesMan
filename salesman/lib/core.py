@@ -181,6 +181,13 @@ class Core:
             if abs(i.price - item.price) <= EPSILON:
                 return i
 
+    @threadsafe
+    @wrap_session
+    def EditItem(self, item):
+        """Edit the non-qty attributes of the item"""
+        i = self.QI().get(item.id)
+        for a in ('name', 'category','price','description'):
+            setattr(i, a, getattr(item, a))
 
     @threadsafe
     @wrap_session
