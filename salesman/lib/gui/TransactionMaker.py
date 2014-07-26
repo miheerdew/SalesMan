@@ -17,7 +17,7 @@ import wx
 from wx.lib import masked
 from ..models import TransactionMaker as TransactionMakerModel
 from ..topics import TRANSACTION_MAKER, TYPE_CHANGED, UNITS_CHANGED,\
-                        TRANSACTION_CHANGED, MAKE_TRANSACTION
+                        ITEM_CHANGED, MAKE_TRANSACTION
 from ..utils import pub, wxdate_to_pydate
 from ..core import ADDITION, SALE, OTHER_TYPES, unit_total
 from .common import ListCtrl
@@ -39,7 +39,7 @@ class TransactionMaker(wx.Panel):
         self.PlaceControls()
         self.SetTabOrder()
         pub.subscribe(self.OnUnitsChanged,UNITS_CHANGED)
-        pub.subscribe(self.OnTransactionsChanged,TRANSACTION_CHANGED)
+        pub.subscribe(self.OnItemsChanged,ITEM_CHANGED)
         pub.subscribe(self.OnMakeTransactionToggle,MAKE_TRANSACTION)
         self.model = TransactionMakerModel(backend)
 
@@ -116,7 +116,7 @@ class TransactionMaker(wx.Panel):
     def GetCategories(self):
         return self.backend.GetCategories()
 
-    def OnTransactionsChanged(self,transactions):
+    def OnItemsChanged(self,items):
         self.nameCtrl.UpdateDisplay()
         self.categoryCtrl.SetChoices(self.GetCategories())
 
