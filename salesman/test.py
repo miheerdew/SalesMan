@@ -95,6 +95,14 @@ class TestCore(unittest.TestCase):
 
         self.assertEqual(self.core.QueryItems().count(),len(items))
 
+    def test_edit_item(self):
+        i = Item(id=1,name='Blah',category='SomeCat', price=10, qty=10, description='Abc')
+        self.core.EditItem(i)
+        item = self.core.QI().get(1)
+        for a in ('name','category', 'price', 'description'):
+            self.assertEqual(getattr(item,a), getattr(i, a))
+        self.assertEqual(item.qty, 30)
+
     def test_add_new_item_without_qty_in_item(self):
         self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
                                 units=[Unit(qty=10, type=ADDITION,
@@ -469,7 +477,7 @@ class TestApp(unittest.TestCase):
         app.Initialize()
         for i in (('AddTransaction',''),('GenerateStatement',''),('GetCategories',),
                 ('GetHistory',1),('InitDatabase',''), ('QueryItems',),
-                ('QueryTransactions',),('Undo',1),('Redo',)):
+                ('QueryTransactions',),('Undo',1),('Redo',),('EditItem',1)):
             assert hasattr(app,i[0])
             assert callable(getattr(app,i[0]))
             with self.assertRaises(FunctionDisabledError):
@@ -744,6 +752,14 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.core.QI().get(2).qty,19)
         self.assertEqual(self.core.QI().get(1).qty,50)
         self.assertEqual(self.core.QueryTransactions().get(2).info,'an insert')
+
+    def test_edit_item(self):
+        i = Item(id=1,name='Blah',category='SomeCat', price=10, qty=10, description='Abc')
+        self.core.EditItem(i)
+        item = self.core.QI().get(1)
+        for a in ('name','category', 'price', 'description'):
+            self.assertEqual(getattr(item,a), getattr(i, a))
+        self.assertEqual(item.qty, 30)
 
     def test_undo_permanent_delete(self):
         for t in self.get_transaction_data():
