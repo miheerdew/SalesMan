@@ -460,12 +460,11 @@ class Application(ToggleableMethods):
         else:
             i = int(transaction)
         i = self.core.getAbsoluteTransactionId(i)
+        transactions_to_be_undone = [self._copyTransaction(t) for t in
+                    self.core.QT().filter(Transaction.id >=i)]
         self.core.Undo(i)
-
         if permanent is False:
             #Put it into the undo stack if no errors are raised
-            transactions_to_be_undone = [self._copyTransaction(t) for t in
-                    self.core.QT().filter(Transaction.id >=i)]
             self.undo_stack.append(transactions_to_be_undone)
             if not self.isEnabled(REDO):
                 self.enable(REDO)
