@@ -103,6 +103,10 @@ class TestCore(unittest.TestCase):
             self.assertEqual(getattr(item,a), getattr(i, a))
         self.assertEqual(item.qty, 30)
 
+    def test_edit_qty(self):
+        self.core.EditQty(1, 15)
+        self.assertEqual(self.core.QI().get(1).qty, 15)
+
     def test_add_new_item_without_qty_in_item(self):
         self.core.AddTransaction(date=date(2014,2,1),type=ADDITION,
                                 units=[Unit(qty=10, type=ADDITION,
@@ -760,6 +764,20 @@ class TestApp(unittest.TestCase):
         for a in ('name','category', 'price', 'description'):
             self.assertEqual(getattr(item,a), getattr(i, a))
         self.assertEqual(item.qty, 30)
+
+    def test_edit_qty(self):
+        self.core.EditQty(1, 15)
+        self.assertEqual(self.core.QI().get(1).qty, 15)
+
+    def test_edit_qty_is_enabled_and_disabled(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditQty(1, 15)
+        self.assertEqual(self.core.QI().get(1).qty, 77)
+        self.core.Undo(0)
+        self.core.EditQty(1, 15)
+        self.assertEqual(self.core.QI().get(1).qty, 15)
 
     def test_edit_item_is_disabled_on_undo(self):
         for t in self.get_transaction_data():
