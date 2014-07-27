@@ -745,6 +745,28 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.core.QI().get(1).qty,50)
         self.assertEqual(self.core.QueryTransactions().get(2).info,'an insert')
 
+    def test_undo_permanent_delete(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        self.core.Undo(-1)
+        self.core.Undo(-1, permanent=True)
+        self.core.Redo()
+        self.assertEqual(self.core.QI().get(1).qty, 57)
+        self.assertEqual(self.core.QueryTransactions().count(), 2)
+
+    def test_undo_permanent_edit(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        self.core.Undo(-1)
+        self.core.Undo(-1, permanent=True)
+        self.core.AddTransaction(date=date(2013,2,1), info='An Edit',
+                                    units=[Unit(item_id=2,qty=1,type=SALE),
+                                    Unit(item_id=1,qty=27,type=SALE)])
+        self.core.Redo()
+        self.assertEqual(self.core.QI().get(2).qty, 19)
+        self.assertEqual(self.core.QI().get(1).qty, 30)
+        self.assertEqual(self.core.QueryTransactions().get(2).info, 'An Edit')
+
     def test_init_database_with_undo_redo(self):
         for t in self.get_transaction_data():
             self.core.AddTransaction(**t)
