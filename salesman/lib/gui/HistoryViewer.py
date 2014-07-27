@@ -16,9 +16,9 @@
 
 import wx
 from .events import EVT_TRANSACTION_SELECTED, EVT_TRANSACTION_UNDO,\
-                    EVT_TRANSACTION_DELETE, EVT_EDIT_ITEM
+                    EVT_TRANSACTION_DELETE, EVT_EDIT_ITEM, EVT_EDIT_QTY
 from ..utils import pub
-from ..topics import TRANSACTION_CHANGED, REDO, EDIT_ITEM
+from ..topics import TRANSACTION_CHANGED, REDO, EDIT_ITEM, EDIT_QTY
 from . import autogen as auto
 
 class HistoryViewer(auto.HistoryViewer):
@@ -51,15 +51,24 @@ class HistoryViewer(auto.HistoryViewer):
         self.Bind(EVT_TRANSACTION_DELETE, self.OnTransactionDelete,
                     self.transaction_viewer)
         self.Bind(EVT_EDIT_ITEM, self.OnEditItem, self.item_viewer)
+        self.Bind(EVT_EDIT_QTY, self.OnEditQty, self.item_viewer)
+
         pub.subscribe(self.OnTransactionsChange, TRANSACTION_CHANGED)
         pub.subscribe(self.OnRedoToggled, REDO)
         pub.subscribe(self.OnEditItemToggled, EDIT_ITEM)
+        pub.subscribe(self.OnEditQtyToggled, EDIT_QTY)
 
         self.Bind(wx.EVT_CLOSE, self.OnWindowClose)
         self.Bind(wx.EVT_TOOL, self.OnRedo, id=wx.ID_REDO)
 
+    def OnEditQtyToggled(self, enabled):
+        self.item_viewer.EnableQtyEditing(enabled)
+
     def OnEditItemToggled(self, enabled):
-        self.item_viewer.EnableEditing(enabled)
+        self.item_viewer.EnableItemEditing(enabled)
+
+    def OnEditQty(self, evt):
+        self.backend.EditQty(evt.item_id, evt.qty)
 
     def OnEditItem(self, evt):
         self.backend.EditItem(evt.item)

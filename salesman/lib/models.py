@@ -238,7 +238,8 @@ class Application(ToggleableMethods):
                                     ADD_TRANSACTION,
                                     QUERY_ITEMS,
                                     QUERY_TRANSACTIONS,
-                                    EDIT_ITEM)
+                                    EDIT_ITEM,
+                                    EDIT_QTY)
     def __init__(self):
         ToggleableMethods.__init__(self)
         self.core = None
@@ -277,6 +278,7 @@ class Application(ToggleableMethods):
 
         if self.core.QT().count() == 0:
             l.append(INIT_DATABASE)
+            l.append(EDIT_QTY)
 
         return l
 
@@ -424,7 +426,7 @@ class Application(ToggleableMethods):
             self.disable(REDO)
             self.enable(EDIT_ITEM)
         if last:
-            self.disable(INIT_DATABASE)
+            self.batchDisable([INIT_DATABASE, EDIT_QTY])
         self.notifyChange()
 
     def _copyTransaction(self, transaction):
@@ -474,7 +476,7 @@ class Application(ToggleableMethods):
             self.disable(EDIT_ITEM)
 
         if self.core.QT().count() == 0:
-            self.enable(INIT_DATABASE)
+            self.batchEnable([INIT_DATABASE,EDIT_QTY])
         self.notifyChange()
 
     @run_if_enabled
@@ -518,7 +520,7 @@ class Application(ToggleableMethods):
 
         if type == ADDITION:
             self.categories |= set(u.item.category for u in units)
-        self.batchDisable([INIT_DATABASE])
+        self.batchDisable([INIT_DATABASE, EDIT_QTY])
         self.notifyChange()
         return id
 
@@ -530,6 +532,11 @@ class Application(ToggleableMethods):
             raise UserError('Invalid Item with item id {}'.format(item.id))
         self.core.EditItem(item)
         self.notifyItemChange()
+
+    @run_if_enabled
+    @threadsafe
+    def EditQty(self, item_id, qty):
+        self.core.EditQty(item_id, qty)
 
     @run_if_enabled
     def QueryItems(self):

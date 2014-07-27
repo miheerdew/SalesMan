@@ -48,3 +48,10 @@ EditItemEvent, EVT_EDIT_ITEM = NewCommandEvent()
 def PostEditItemEvent(target, item):
     evt = EditItemEvent(target.GetId(), item=item)
     wx.PostEvent(target, evt)
+
+
+EditQtyEvent, EVT_EDIT_QTY = NewCommandEvent()
+
+def PostEditQtyEvent(target, item_id, qty):
+    evt = EditQtyEvent(target.GetId(), item_id=item_id, qty=qty)
+    wx.PostEvent(target, evt)

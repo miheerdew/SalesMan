@@ -191,6 +191,12 @@ class Core:
 
     @threadsafe
     @wrap_session
+    def EditQty(self, item_id, qty):
+        i = self.QI().get(item_id)
+        i.qty = qty
+
+    @threadsafe
+    @wrap_session
     def AddBatchTransactions(self, transactions):
         return [self._addTransaction(
                 *[getattr(t,a) for a in ('date','units','info','type')]
