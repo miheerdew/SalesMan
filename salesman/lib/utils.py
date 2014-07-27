@@ -49,6 +49,13 @@ def wxdate_to_pydate(date):
     else:
          return None
 
+def pydate_to_wxdate(date):
+     import datetime
+     assert isinstance(date, (datetime.datetime, datetime.date))
+     tt = date.timetuple()
+     dmy = (tt[2], tt[1]-1, tt[0])
+     return wx.DateTimeFromDMY(*dmy)
+
 def silent_remove(filename):
     "Remove filename if exists"
     try:

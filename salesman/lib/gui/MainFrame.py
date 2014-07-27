@@ -28,6 +28,7 @@ from . import images
 from yapsy.PluginManager import PluginManagerSingleton
 from ..models import UserError
 from ... import about
+from .events import EVT_TRANSACTION_EDIT
 
 class MenuItemToggleListener:
     def __init__(self, menuItem):
@@ -54,6 +55,10 @@ class MainFrame(wx.Frame):
         self.SetSizerAndFit(sizer)
         self.SetIcons(images.GetIconBundleFromImage(images.getAppIconImage()))
 
+        self.Bind(EVT_TRANSACTION_EDIT, self.OnEditTransaction)
+
+    def OnEditTransaction(self, evt):
+        self.transaction_maker.FromTransaction(evt.transaction)
 
     def OnTransactionAdded(self, id):
         self.statusbar.PushStatusText('New transaction added with '

@@ -18,7 +18,7 @@ from wx.lib import masked
 from ..models import TransactionMaker as TransactionMakerModel
 from ..topics import TRANSACTION_MAKER, TYPE_CHANGED, UNITS_CHANGED,\
                         ITEM_CHANGED, MAKE_TRANSACTION
-from ..utils import pub, wxdate_to_pydate
+from ..utils import pub, wxdate_to_pydate, pydate_to_wxdate
 from ..core import ADDITION, SALE, OTHER_TYPES, unit_total
 from .common import ListCtrl
 from .auto_complete_controls import \
@@ -109,6 +109,16 @@ class TransactionMaker(wx.Panel):
 
     def OnUnitsChanged(self, units, type):
         self.unit_viewer.DisplayUnits(units,type)
+        self._changeType(type)
+
+    def _changeType(self, t):
+        """Just change the visual type of transaction Maker only"""
+        self.typeCtrl.SetValue(t)
+        if t != SALE:
+            self.sizer.Hide(self.discount_box)
+        else:
+            self.sizer.Show(self.discount_box)
+
 
     def GetItems(self):
         return [[str(getattr(i,a)) for a in AC_ATTRS_NAMES] for i in self.backend.QueryItems()]
@@ -246,17 +256,27 @@ class TransactionMaker(wx.Panel):
     def OnTypeChanged(self, evt):
         type = evt.GetString()
         self.model.ChangeType(type)
-        if type != SALE:
-            self.sizer.Hide(self.discount_box)
-        else:
-            self.sizer.Show(self.discount_box)
 
     def OnReset(self, evt):
         self.model.Reset()
         self.ResetItemEntryForm()
+        self.infoCtrl.SetValue('')
 
     def OnItemSelect(self,item):
         self.ItemAutoFill(item)
+
+    def FromTransaction(self, transaction):
+        self.model.Reset()
+        self.model.ChangeType(transaction.type)
+        self.ClearItemEntryForm()
+        self.infoCtrl.SetValue(transaction.info)
+        self.dateCtrl.SetValue(pydate_to_wxdate(transaction.date))
+        for u in transaction.units:
+            self.model.AddItem(name=u.item.name,
+                                category=u.item.category,
+                                price=u.item.price,
+                                qty=u.qty,
+                                discount=u.discount)
 
 class UnitViewer(ListCtrl):
     def __init__(self, parent):

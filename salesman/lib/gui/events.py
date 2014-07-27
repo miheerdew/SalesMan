@@ -55,3 +55,10 @@ EditQtyEvent, EVT_EDIT_QTY = NewCommandEvent()
 def PostEditQtyEvent(target, item_id, qty):
     evt = EditQtyEvent(target.GetId(), item_id=item_id, qty=qty)
     wx.PostEvent(target, evt)
+
+
+TransactionEditEvent, EVT_TRANSACTION_EDIT = NewCommandEvent()
+
+def PostTransactionEditEvent(target, transaction):
+    evt = TransactionEditEvent(target.GetId(), transaction=transaction)
+    wx.PostEvent(target, evt)

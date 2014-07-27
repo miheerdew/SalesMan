@@ -3,7 +3,8 @@ from datetime import date
 from .common import ListCtrl
 from .events import  PostTransactionSelectedEvent,\
                      PostTransactionUndoEvent,\
-                     PostTransactionDeleteEvent
+                     PostTransactionDeleteEvent,\
+                     PostTransactionEditEvent
 from ..topics import TRANSACTION_CHANGED, REDO
 from ..constants import NULL_TRANSACTION
 
@@ -45,18 +46,26 @@ class TransactionViewer(ListCtrl):
 
     def OnRightClick(self, evt):
         if not hasattr(self, "undoPopup"):
-            self.undoPopup, self.delPopup = wx.NewId(), wx.NewId()
+            self.undoPopup, \
+            self.delPopup, \
+            self.editPopup = [ wx.NewId() for i in range(3)]
+
             self.Bind(wx.EVT_MENU, self.OnUndo, id=self.undoPopup)
             self.Bind(wx.EVT_MENU, self.OnDel, id=self.delPopup)
+            self.Bind(wx.EVT_MENU, self.OnEdit, id=self.editPopup)
 
         if self.current_selection not in [None,self.count-1]:
             menu = wx.Menu()
             menu.Append(self.undoPopup, "Undo selected transaction")
             menu.Append(self.delPopup, "Delete selected transaction")
+            menu.Append(self.editPopup, "Edit selected transaction")
             self.PopupMenu(menu)
             menu.Destroy()
 
         evt.Skip()
+
+    def OnEdit(self, event):
+        PostTransactionEditEvent(self, self.getSelectedTransaction())
 
     def OnUndo(self, event):
         PostTransactionUndoEvent(self, self.getSelectedTransaction())
