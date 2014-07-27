@@ -244,11 +244,11 @@ def normalizeString(string):
 def standardizeString(string):
     r"""Gives a beautified version of the normalization of the string.
 
-    Currently Just converts the normalized form into title case.
+    Currently just removes extra spaces.
     >>> standardizeString("asd  Adsbs \t  \n Bd a   ")
-    'Asd Adsbs Bd A'
+    'asd Adsbs Bd a'
     """
-    return normalizeString(string).title()
+    return ' '.join(w for w in string.split())
 
 if __name__ == '__main__':
     import doctest

@@ -448,8 +448,8 @@ class TestApp(unittest.TestCase):
         self.core = Application()
         self.core.OpenDatabase(':memory:')
 
-        l = [   ('Abc for kids', BOOK, 20, 30, 'For Kids'),
-                ('Abc for kids', BOOK, 30, 20, 'For Smaller Kids'),
+        l = [   ('Abc For Kids', BOOK, 20, 30, 'For Kids'),
+                ('Abc For Kids', BOOK, 30, 20, 'For Smaller Kids'),
                 ('abc in python', BOOK, 40, 10, 'For Developers'),
                 ('abc in python', BOOK, 40, 10, 'For Developers'),
             ]
@@ -674,8 +674,7 @@ class TestApp(unittest.TestCase):
 
         t = self.core.AddTransaction(date=d, units=u)
 
-        self.assertEqual( 31,
-            self.core.QueryItems().get(1).qty)
+        self.assertEqual( 31, self.core.QueryItems().get(1).qty)
 
         self.assertEqual( 1, self.core.QueryTransactions().get(t).units[1].item.qty)
 
