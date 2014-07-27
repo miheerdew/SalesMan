@@ -761,6 +761,17 @@ class TestApp(unittest.TestCase):
             self.assertEqual(getattr(item,a), getattr(i, a))
         self.assertEqual(item.qty, 30)
 
+    def test_edit_item_is_disabled_on_undo(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        self.core.EditItem(self.core.QI().get(1))
+        self.core.Undo(-1)
+        self.assertEqual(self.core.QueryTransactions().count(),2)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditItem(self.core.QI().get(1))
+        self.core.Redo()
+        self.core.EditItem(self.core.QI().get(1))
+
     def test_undo_permanent_delete(self):
         for t in self.get_transaction_data():
             self.core.AddTransaction(**t)

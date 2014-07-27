@@ -470,7 +470,8 @@ class Application(ToggleableMethods):
             self.undo_stack.append(transactions_to_be_undone)
             if not self.isEnabled(REDO):
                 self.enable(REDO)
-                self.disable(EDIT_ITEM)
+            #TODO: The test for edit_item fails when kept inside the if
+            self.disable(EDIT_ITEM)
 
         if self.core.QT().count() == 0:
             self.enable(INIT_DATABASE)
