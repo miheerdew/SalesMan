@@ -446,6 +446,7 @@ class TestApp(unittest.TestCase):
 
     def setUp(self):
         self.core = Application()
+        self.core.Initialize()
         self.core.OpenDatabase(':memory:')
 
         l = [   ('Abc For Kids', BOOK, 20, 30, 'For Kids'),
@@ -481,7 +482,7 @@ class TestApp(unittest.TestCase):
         app.Initialize()
         for i in (('AddTransaction',''),('GenerateStatement',''),('GetCategories',),
                 ('GetHistory',1),('InitDatabase',''), ('QueryItems',),
-                ('QueryTransactions',),('Undo',1),('Redo',),('EditItem',1)):
+                ('QueryTransactions',),('Undo',1),('Redo',),('EditItem',1),('EditQty',1,2)):
             assert hasattr(app,i[0])
             assert callable(getattr(app,i[0]))
             with self.assertRaises(FunctionDisabledError):
@@ -758,6 +759,7 @@ class TestApp(unittest.TestCase):
 
     def test_edit_item(self):
         i = Item(id=1,name='Blah',category='SomeCat', price=10, qty=10, description='Abc')
+        self.core.LockEdit(False)
         self.core.EditItem(i)
         item = self.core.QI().get(1)
         for a in ('name','category', 'price', 'description'):
@@ -765,10 +767,40 @@ class TestApp(unittest.TestCase):
         self.assertEqual(item.qty, 30)
 
     def test_edit_qty(self):
+        self.core.LockEdit(False)
         self.core.EditQty(1, 15)
         self.assertEqual(self.core.QI().get(1).qty, 15)
 
+    def test_lock_unlock_edit(self):
+        for t in self.get_transaction_data():
+            self.core.AddTransaction(**t)
+        #print self.core._enabled_functions
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditItem(self.core.QI().get(1))
+        self.core.LockEdit(False)
+        self.core.EditItem(self.core.QI().get(1))
+        self.core.LockEdit(True)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditItem(self.core.QI().get(1))
+        self.core.LockEdit(False)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditQty(1,1)
+        self.core.Undo(0)
+        self.core.EditQty(1,2)
+        self.core.LockEdit(True)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditQty(1,1)
+        self.core.LockEdit(False)
+        self.core.EditQty(1,3)
+        self.core.LockEdit(True)
+        with self.assertRaises(FunctionDisabledError):
+            self.core.EditQty(1,1)
+        self.assertEqual(self.core.QI().get(1).qty, 3)
+ 
+ 
+
     def test_edit_qty_is_enabled_and_disabled(self):
+        self.core.LockEdit(False)
         for t in self.get_transaction_data():
             self.core.AddTransaction(**t)
         with self.assertRaises(FunctionDisabledError):
@@ -779,6 +811,7 @@ class TestApp(unittest.TestCase):
         self.assertEqual(self.core.QI().get(1).qty, 15)
 
     def test_edit_item_is_disabled_on_undo(self):
+        self.core.LockEdit(False)
         for t in self.get_transaction_data():
             self.core.AddTransaction(**t)
         self.core.EditItem(self.core.QI().get(1))

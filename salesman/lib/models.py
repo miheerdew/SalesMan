@@ -246,6 +246,7 @@ class Application(ToggleableMethods):
         self.engine = None
         self.dbfile = None
         self.undo_stack = []
+        self.edit_locked = True
         self.lock = threading.Lock()
 
     def GetDBFilePath(self):
@@ -274,10 +275,13 @@ class Application(ToggleableMethods):
         ADD_TRANSACTION,
         QUERY_ITEMS,
         QUERY_TRANSACTIONS,
-        EDIT_ITEM]
+        ]
 
         if self.core.QT().count() == 0:
             l.append(INIT_DATABASE)
+        if self.canEditItem():
+            l.append(EDIT_ITEM)
+        if self.canEditQty():
             l.append(EDIT_QTY)
 
         return l
@@ -424,7 +428,8 @@ class Application(ToggleableMethods):
         self.undo_stack.pop()
         if len(self.undo_stack) == 0:
             self.disable(REDO)
-            self.enable(EDIT_ITEM)
+            if self.canEditItem():
+                self.enable(EDIT_ITEM)
         if last:
             self.batchDisable([INIT_DATABASE, EDIT_QTY])
         self.notifyChange()
@@ -476,7 +481,9 @@ class Application(ToggleableMethods):
             self.disable(EDIT_ITEM)
 
         if self.core.QT().count() == 0:
-            self.batchEnable([INIT_DATABASE,EDIT_QTY])
+            self.batchEnable([INIT_DATABASE])
+        if self.canEditQty():
+           self.enable(EDIT_QTY)
         self.notifyChange()
 
     @run_if_enabled
@@ -534,10 +541,27 @@ class Application(ToggleableMethods):
         self.core.EditItem(item)
         self.notifyItemChange()
 
+    def canEditItem(self):
+        return self.core and len(self.undo_stack) == 0 and (not self.edit_locked)
+        
     @run_if_enabled
     @threadsafe
     def EditQty(self, item_id, qty):
         self.core.EditQty(item_id, qty)
+
+    def canEditQty(self):
+        return self.core and self.core.QT().count() == 0 and (not self.edit_locked)
+
+    @threadsafe
+    def LockEdit(self, locked=True):
+        self.edit_locked = locked
+        if locked:
+            self.batchDisable([EDIT_QTY,EDIT_ITEM])
+        else:
+            if self.canEditQty():
+                self.enable(EDIT_QTY)
+            if self.canEditItem():
+                self.enable(EDIT_ITEM)
 
     @run_if_enabled
     def QueryItems(self):
