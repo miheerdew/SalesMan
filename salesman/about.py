@@ -1,5 +1,5 @@
 Name="SalesMan"
-Version="0.3.0 Beta"
+Version="0.4.0"
 Copyright="Copyright (C) 2013  Miheer Dewaskar <miheerdew@gmail.com>"
 WebSite="https://github.com/miheerdew/SalesMan/"
 Developers=["Miheer Dewaskar"]

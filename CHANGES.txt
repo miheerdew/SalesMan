@@ -13,3 +13,6 @@ v0.3.0, 31-7-2013 -- Added Plugin support for InitParsing,
             salesman.plugins is now a package,
             Added about box,
             Now InitDatabase can only be used if there are no transactions
+v0.4.0, 18-10-2014 -- Fixed some bugs. Added support for Editing items, added
+                a changes only option.
+            
