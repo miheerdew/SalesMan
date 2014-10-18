@@ -525,6 +525,7 @@ class Application(ToggleableMethods):
         return id
 
     #TODO: Edit self.categories on Edit. Make self.categories into a multiset?
+    #      When item is removed, the corresponding category must also be removed
     @run_if_enabled
     @threadsafe
     def EditItem(self, item):
