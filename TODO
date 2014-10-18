@@ -1,5 +1,3 @@
-* Add an toggleable Edit button in the HistotyViewer toolbar to provide
-  a child lock for editing.
 * Make a register like mom wants
 * Add logging so that we know what changes are made in this session
 * Allow the statement formatter plugin to generate statement in different
