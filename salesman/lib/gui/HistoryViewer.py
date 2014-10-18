@@ -40,6 +40,10 @@ class HistoryViewer(auto.HistoryViewer):
                                     shortHelp = i[3],
                         longHelp = i[4] if i[4] is not None else i[3]
                                     )
+        self.edit_lock_id = wx.NewId()
+        self.toolbar.AddCheckLabelTool(self.edit_lock_id,
+                         bitmap=wx.ArtProvider.GetBitmap(wx.ART_REPORT_VIEW),
+                         label='EditItems', shortHelp='Allow items to be edited')
         self.toolbar.Realize()
 
     def _makeBindings(self):
@@ -60,6 +64,11 @@ class HistoryViewer(auto.HistoryViewer):
 
         self.Bind(wx.EVT_CLOSE, self.OnWindowClose)
         self.Bind(wx.EVT_TOOL, self.OnRedo, id=wx.ID_REDO)
+        self.Bind(wx.EVT_TOOL, self.OnEditLockClicked, id=self.edit_lock_id)
+
+    def OnEditLockClicked(self, evt):
+        enableEditing = self.toolbar.GetToolState(self.edit_lock_id)
+        self.backend.LockEdit(not enableEditing)
 
     def OnEditQtyToggled(self, enabled):
         self.item_viewer.EnableQtyEditing(enabled)
