@@ -14,9 +14,54 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>
 
 import wx
+from . import images
+from ..schema import Item
 from .common import ListCtrl
 from .events import PostEditItemEvent, PostEditQtyEvent
 from wx.lib.mixins import listctrl as listmix
+import locale
+
+class ColumnSorterMixin(listmix.ColumnSorterMixin):
+
+    def __init__(self, ncols):
+        listmix.ColumnSorterMixin.__init__(self, ncols)
+        list = self.GetListCtrl()
+        self.il = wx.ImageList(16, 16)
+        self.sm_up = self.il.Add(images.SmallUpArrow.GetBitmap())
+        self.sm_down = self.il.Add(images.SmallDnArrow.GetBitmap())
+        list.SetImageList(self.il, wx.IMAGE_LIST_SMALL)
+
+    def GetSortImages(self):
+        return (self.sm_down, self.sm_up)
+
+    def __ColumnSorter(self, row1, row2):
+        col = self._col
+        ascending = self._colSortFlag[col]
+        item1 = row1[col]
+        item2 = row2[col]
+
+        #--- Internationalization of string sorting with locale module
+        if type(item1) == unicode and type(item2) == unicode:
+            cmpVal = locale.strcoll(item1, item2)
+        elif type(item1) == str or type(item2) == str:
+            cmpVal = locale.strcoll(str(item1), str(item2))
+        else:
+            cmpVal = cmp(item1, item2)
+        #---
+
+        # If the items are equal then pick something else to make the sort value unique
+        if cmpVal == 0:
+            cmpVal = apply(cmp, self.GetSecondarySortValues(col, row1, row2))
+
+        if ascending:
+            return cmpVal
+        else:
+            return -cmpVal
+
+    def GetColumnSorter(self):
+        """Returns a callable object to be used for comparing column values when sorting."""
+        return self.__ColumnSorter
+
 
 
 class TextEditMixin(listmix.TextEditMixin):
@@ -67,15 +112,16 @@ class TextEditMixin(listmix.TextEditMixin):
         if not enable and self.curCol not in self.__item_columns:
             self.CloseEditor()
 
-class ItemViewer(ListCtrl, TextEditMixin):
+class ItemViewer(ListCtrl, TextEditMixin, ColumnSorterMixin):
     def __init__(self, parent, **kargs):
         self.items = []
         self.headers = [('Id',50),('Name',50),('Category',100),('Price',75),('Qty',50)]
-        self.attrs = ['id','name','category','price','qty']
+        self.attrs = ['id','name','category','price','qty','description']
 
         kargs['style'] = wx.LC_REPORT|wx.LC_VIRTUAL|kargs.get('style',0)
         ListCtrl.__init__(self, parent, **kargs)
         TextEditMixin.__init__(self)
+        ColumnSorterMixin.__init__(self, 5)
 
         for i,t in enumerate(self.headers):
             self.InsertColumn(i,t[0])
@@ -84,17 +130,19 @@ class ItemViewer(ListCtrl, TextEditMixin):
         self.setResizeColumn(2)
         self.SetItemCount(0)
 
+    def GetListCtrl(self): return self
+
     def GetItemAt(self, index):
         return self.items[index]
 
     def UpdateDisplay(self, items):
         count = items.count()
         self.SetItemCount(count)
-        self.items = list(items) # to allow assignment in SetVirtualData()
+        self.items = [list(getattr(i,a) for a in self.attrs) for i in items]
         self.RefreshItems(0,count-1)
 
     def OnGetItemText(self, row, col):
-        return getattr(self.items[row],self.attrs[col])
+        return self.items[row][col]
 
     def SetVirtualData(self, row, col, text):
         item = self.items[row]
@@ -103,8 +151,15 @@ class ItemViewer(ListCtrl, TextEditMixin):
             val = float(val)
         if col == 4: #Qty
             val = int(val)
-        setattr(item, self.attrs[col], val)
+
         if col == 4: #Qty
-            PostEditQtyEvent(self, item.id, item.qty)
+            PostEditQtyEvent(self, item[0], val)
         else:
-            PostEditItemEvent(self, item)
+            item[col] = val
+            PostEditItemEvent(self, Item(**{a:item[i] for i,a in enumerate(self.attrs)}))
+
+        self.items[row][col] = val
+
+    def SortItems(self, f):
+        self.items.sort(cmp=f)
+        self.RefreshItems(0,len(self.items)-1)

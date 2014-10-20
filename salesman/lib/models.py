@@ -539,11 +539,11 @@ class Application(ToggleableMethods):
         if self.core.QI().get(item.id) is None:
             raise UserError('Invalid Item with item id {}'.format(item.id))
         self.core.EditItem(item)
-        self.notifyItemChange()
+        #self.notifyItemChange() #Not raising to prevent double a feedback to IV
 
     def canEditItem(self):
         return self.core and len(self.undo_stack) == 0 and (not self.edit_locked)
-        
+
     @run_if_enabled
     @threadsafe
     def EditQty(self, item_id, qty):
