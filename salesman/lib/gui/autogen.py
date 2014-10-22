@@ -136,7 +136,7 @@ class SettingsDialog ( wx.Dialog ):
 		
 		gbSizer1.Add( self.pluginsHtml, wx.GBPosition( 0, 0 ), wx.GBSpan( 1, 2 ), wx.ALL|wx.EXPAND, 10 )
 		
-		self.m_staticText5 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Statement Formatter", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText5 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Statement Writer", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText5.Wrap( -1 )
 		gbSizer1.Add( self.m_staticText5, wx.GBPosition( 1, 0 ), wx.GBSpan( 1, 1 ), wx.ALL, 10 )
 		
@@ -149,10 +149,10 @@ class SettingsDialog ( wx.Dialog ):
 		self.transactionFormatter.SetSelection( 0 )
 		gbSizer1.Add( self.transactionFormatter, wx.GBPosition( 2, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
 		
-		statementFormatterChoices = []
-		self.statementFormatter = wx.Choice( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, statementFormatterChoices, 0 )
-		self.statementFormatter.SetSelection( 0 )
-		gbSizer1.Add( self.statementFormatter, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
+		statementWriterChoices = []
+		self.statementWriter = wx.Choice( self.m_panel1, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, statementWriterChoices, 0 )
+		self.statementWriter.SetSelection( 0 )
+		gbSizer1.Add( self.statementWriter, wx.GBPosition( 1, 1 ), wx.GBSpan( 1, 1 ), wx.ALL|wx.EXPAND, 5 )
 		
 		self.m_staticText51 = wx.StaticText( self.m_panel1, wx.ID_ANY, u"Init File Parser", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText51.Wrap( -1 )

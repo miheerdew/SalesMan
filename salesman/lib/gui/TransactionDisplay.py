@@ -33,8 +33,8 @@ class TransactionDisplay(wx.Panel):
     def BindWidgets(self):
         self.printBtn.Bind(wx.EVT_BUTTON, self.OnPrint)
 
-    def OnFormatterChanged(self, formatterPlugin):
-        self.transactionFormatterPlugin=formatterPlugin
+    def OnFormatterChanged(self, plugin):
+        self.transactionFormatterPlugin=plugin
         self.UpdateDisplay(self.currentTransaction)
 
     def OnPrint(self, evt):
