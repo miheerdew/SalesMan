@@ -259,8 +259,7 @@ class Application(ToggleableMethods):
         return WrapItems(self.core.QI(),self.core.GetHistory(id),strict=True)
 
     @run_if_enabled
-    def GenerateStatement(self, statementFile, startDate, endDate,
-                            formatter, changes_only=False):
+    def GenerateStatement(self,  startDate, endDate, changes_only=False):
         e_reason = None
         if not isinstance(startDate, datetime.date):
             e_reason = 'start date is Invalid'
@@ -286,36 +285,8 @@ class Application(ToggleableMethods):
         end = last_transaction.id if last_transaction else 0
         start = first_transaction.id if first_transaction else end+1
 
-        statement = self.core.GenerateStatement(start, end, relative=changes_only)
+        return self.core.GenerateStatement(start, end, relative=changes_only)
 
-        opened = False
-        if isinstance(statementFile,basestring):
-            try:
-                fd = open(statementFile,'wb')
-                opened = True
-            except IOError as e:
-                raise UserError('Cannot write statement to file "{}"'
-                                .format(statementFile),
-                                str(e),e)
-        else:
-            fd = statementFile
-
-        writer = csv.writer(fd, delimiter=',',
-                    quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
-
-        try:
-            for row in formatter(self.core.QI(), statement,
-                                        startDate, endDate):
-                writer.writerow(row)
-        except:
-            e_type, e_value, e_trace = sys.exc_info()
-            e_msg = "Cannot Generate Statement"
-            e_reason = ("An error occured in the formatter function : {}"
-                            .format(e_value))
-            raise UserError(e_msg, e_reason, e_value), None, e_trace
-        finally:
-            if opened:
-                fd.close()
 
     @run_if_enabled
     @threadsafe

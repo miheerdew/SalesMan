@@ -172,7 +172,7 @@ class TestCore(unittest.TestCase):
         return self.core.AddTransaction(date=transaction[0],units=units,
                                 type=transaction[2])
 
-                        
+
     def test_statement_generation(self):
         transactions =(
             (
@@ -199,7 +199,7 @@ class TestCore(unittest.TestCase):
 
 
         ids = [ self.addSimpleTransaction(t) for t in transactions]
-                
+
         statement=self.core.GenerateStatement()
         rel_statement=self.core.GenerateStatement(relative=True)
         expected = dict(opening=  [30,20,10,10, 0],
@@ -228,7 +228,7 @@ class TestCore(unittest.TestCase):
 
         self.check_for_statement(statement, expected)
         self.check_if_is_relative(rel_statement, statement, changes=[1,5])
-        
+
         statement = self.core.GenerateStatement(ids[2],ids[2])
         rel_statement = self.core.GenerateStatement(ids[2],ids[2], relative=True)
         expected = dict(opening=  [28,18, 7,14, 2],
@@ -239,7 +239,7 @@ class TestCore(unittest.TestCase):
                         gifts=    [ 0, 0, 0, 0, 0],
                         transfers=[ 0, 0, 0, 0, 0],
                         library  =[ 0, 0, 0, 0, 0])
-        
+
         self.check_for_statement(statement, expected)
         self.check_if_is_relative(rel_statement, statement, changes=[1,5])
 
@@ -280,7 +280,7 @@ class TestCore(unittest.TestCase):
                         transfers=[ 0, 0, 0, 0, 0],
                         library = [ 0, 0, 0, 0, 0])
         self.check_for_statement(statement, expected)
-    
+
     def check_if_is_relative(self, rel_stat, orig_stat, changes):
         for c in changes:
             self.assertEqual(rel_stat[c],orig_stat[c])
@@ -535,106 +535,117 @@ class TestApp(unittest.TestCase):
         return self.core.AddTransaction(date=transaction[0],units=units,
                                 type=transaction[2])
 
-    @unittest.skip('Need to be modified')
     def test_statement_generation(self):
-        fd = BytesIO
-        transactions =(
+        txns =(
             (
                 date(2012,1,1),
                 ((1,1,SALE,4),(2,2,GIFT),(3,3,TRANSFER),(4,4,ADDITION)),
                 None
             ),
             (
-                date(2012,1,2),
+                date(2012,2,2),
                 (  (Item(name='Mathematical Circles',
                         price=120, category=BOOK),
                     2,
                     ADDITION),
+                    (1,1, LIBRARY)
                 ),
-                ADDITION
+                None
             ),
             (
-                date(2012,1,3),
+                date(2012,3,3),
                 ((5,1,SALE,10),(1,1,SALE,4)),
                 SALE
             )
         )
 
 
-        ids = [ self.addSimpleTransaction(t) for t in transactions]
+        ids = [ self.addSimpleTransaction(t) for t in txns]
 
-        statement=self.core.GenerateStatement()
+        statement=self.core.GenerateStatement(date(2001,1,1), date(2015,1,1))
+        rel_statement=self.core.GenerateStatement(date(2001,1,1), date(2015,1,1), changes_only=True)
         expected = dict(opening=  [30,20,10,10, 0],
-                        closing=  [28,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 4, 2],
                         sales=    [ 2, 0, 0, 0, 1],
                         discount= [ 8, 0, 0, 0,10],
                         gifts=    [ 0, 2, 0, 0, 0],
-                        transfers=[ 0, 0, 3, 0, 0])
+                        transfers=[ 0, 0, 3, 0, 0],
+                        library=  [ 1, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
+        self.check_if_is_relative(rel_statement, statement, changes=[1,2,3,4,5])
 
 
-        statement = self.core.GenerateStatement(ids[1],ids[2])
+        statement = self.core.GenerateStatement(txns[1][0], txns[2][0])
+        rel_statement = self.core.GenerateStatement(txns[1][0],txns[2][0], changes_only=True)
         expected = dict(opening=  [29,18, 7,14, 0],
-                        closing=  [28,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 2],
                         sales=    [ 1, 0, 0, 0, 1],
                         discount= [ 4, 0, 0, 0,10],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 1, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
+        self.check_if_is_relative(rel_statement, statement, changes=[1,5])
 
+        statement = self.core.GenerateStatement(date(2012, 1, 31), date(2012, 3, 5))
+        rel_statement = self.core.GenerateStatement(date(2012, 1, 31), date(2012, 3, 5), changes_only=True)
+        expected = dict(opening=  [29,18, 7,14, 0],
+                        closing=  [27,18, 7,14, 1],
+                        additions=[ 0, 0, 0, 0, 2],
+                        sales=    [ 1, 0, 0, 0, 1],
+                        discount= [ 4, 0, 0, 0,10],
+                        gifts=    [ 0, 0, 0, 0, 0],
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 1, 0, 0, 0, 0])
 
-        statement = self.core.GenerateStatement(ids[2],ids[2])
-        expected = dict(opening=  [29,18, 7,14, 2],
-                        closing=  [28,18, 7,14, 1],
+        self.check_for_statement(statement, expected)
+        self.check_if_is_relative(rel_statement, statement, changes=[1,5])
+
+        statement = self.core.GenerateStatement(txns[2][0], txns[2][0])
+        rel_statement = self.core.GenerateStatement(txns[2][0], txns[2][0], changes_only=True)
+        expected = dict(opening=  [28,18, 7,14, 2],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 1, 0, 0, 0, 1],
                         discount= [ 4, 0, 0, 0,10],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library  =[ 0, 0, 0, 0, 0])
 
+        self.check_for_statement(statement, expected)
 
-        statement = self.core.GenerateStatement(4,4)
-        expected = dict(opening=  [28,18, 7,14, 1],
-                        closing=  [28,18, 7,14, 1],
+        self.check_if_is_relative(rel_statement, statement, changes=[1,5])
+
+        statement = self.core.GenerateStatement(date(2015,1,1), date(2015,1,1))
+        rel_statement = self.core.GenerateStatement(date(2015,1,1), date(2015,1,1), changes_only=True)
+        expected = dict(opening=  [27,18, 7,14, 1],
+                        closing=  [27,18, 7,14, 1],
                         additions=[ 0, 0, 0, 0, 0],
                         sales=    [ 0, 0, 0, 0, 0],
                         discount= [ 0, 0, 0, 0, 0],
                         gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+                        transfers=[ 0, 0, 0, 0, 0],
+                        library = [ 0, 0, 0, 0, 0])
 
         self.check_for_statement(statement, expected)
+        self.check_if_is_relative(rel_statement, statement, changes=[])
 
-        statement = self.core.GenerateStatement(5,5)
-        expected = dict(opening=  [28,18, 7,14, 1],
-                        closing=  [28,18, 7,14, 1],
-                        additions=[ 0, 0, 0, 0, 0],
-                        sales=    [ 0, 0, 0, 0, 0],
-                        discount= [ 0, 0, 0, 0, 0],
-                        gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
+        with self.assertRaises(UserError):
+            self.core.GenerateStatement(txns[1][0], txns[0][0])
 
-        self.check_for_statement(statement, expected)
-
-
-        statement = self.core.GenerateStatement(3,2)
-        expected = dict(opening=  [29,18, 7,14, 2],
-                        closing=  [29,18, 7,14, 2],
-                        additions=[ 0, 0, 0, 0, 0],
-                        sales=    [ 0, 0, 0, 0, 0],
-                        discount= [ 0, 0, 0, 0, 0],
-                        gifts=    [ 0, 0, 0, 0, 0],
-                        transfers=[ 0, 0, 0, 0, 0])
-        self.check_for_statement(statement, expected)
-
+    def check_if_is_relative(self, rel_stat, orig_stat, changes):
+        for c in changes:
+            self.assertEqual(rel_stat[c],orig_stat[c])
+        self.assertEqual(set(rel_stat.keys()),set(changes))
 
     def check_for_statement(self, statement, expected):
         for k,v in statement.items():
-            for a in v.attrs:
-                self.assertEqual(getattr(v,a), expected[a][k-1])
+            for a in v:
+                self.assertEqual(v[a], expected[a][k-1])
 
     def test_different_kinds_of_units(self):
         units = [Unit(item_id=1,qty=1,type=SALE),
@@ -824,8 +835,8 @@ class TestApp(unittest.TestCase):
         with self.assertRaises(FunctionDisabledError):
             self.core.EditQty(1,1)
         self.assertEqual(self.core.QI().get(1).qty, 3)
- 
- 
+
+
 
     def test_edit_qty_is_enabled_and_disabled(self):
         self.core.LockEdit(False)
