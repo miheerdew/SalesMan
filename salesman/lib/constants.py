@@ -52,7 +52,7 @@ CSV='CSV'
 APP_CONFIG_FILE=APP_NAME+".conf"
 PLUGINS_DIR_NAME='plugins'
 DEFAULT_PLUGIN_MAP={
-        STATEMENT_WRITER:'Default Statement Formatter',
+        STATEMENT_WRITER:'Default Statement Writer',
         TRANSACTION_FORMATTER: 'Default Transaction Formatter',
         INIT_PARSER:'Default Init Parser'
         }

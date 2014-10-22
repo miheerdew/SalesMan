@@ -1,5 +1,5 @@
 [Core]
-Name = Default Statement Formatter
+Name = Default Statement Writer
 Module = default_statement_plugin
 
 [Documentation]

@@ -74,6 +74,9 @@ class WrapQuery(object):
     def filter(self, *args, **kargs):
         return self.wrap(self._query.filter(*args, **kargs))
 
+    def order_by(self, *args, **kargs):
+        return self.wrap(self._query.order_by(*args, **kargs))
+
     def count(self):
         return self._query.count()
 
