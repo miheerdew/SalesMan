@@ -1,10 +1,40 @@
+import csv
+import sys
+
 from salesman.lib.schema import Item
 from salesman.lib.core import SALE, OTHER_TYPES as OTHERS, unit_total
+from salesman.lib.models import UserError
 from salesman.lib.utils import text_to_html
 import salesman.plugintypes as pt
 
+class StatementWriter(pt.IStatementWriter):
+    ext_info = ('csv','Comma Separated Value')
 
-class StatementFormatter(pt.IStatementFormatter):
+    def write(self, path, statement, items, startDate, endDate):
+        opened = False
+        try:
+            fd = open(path,'wb')
+            opened = True
+        except IOError as e:
+            raise UserError('Cannot write statement to file "{}"'
+                            .format(path), str(e),e)
+
+        writer = csv.writer(fd, delimiter=',',
+                    quotechar='"', quoting=csv.QUOTE_NONNUMERIC)
+
+        try:
+            for row in self.format(items, statement, startDate, endDate):
+                writer.writerow(row)
+        except:
+            e_type, e_value, e_trace = sys.exc_info()
+            e_msg = "Cannot Generate Statement"
+            e_reason = ("An error occured in the formatter function : {}"
+                            .format(e_value))
+            raise UserError(e_msg, e_reason, e_value), None, e_trace
+        finally:
+            if opened:
+                fd.close()
+
 
     DATE_FORMAT='%d/%m/%Y'
 
@@ -58,7 +88,7 @@ class StatementFormatter(pt.IStatementFormatter):
                 r['sales'], r['discount'], r['sales']*p - r['discount'], #Sales
                     ] + [j for i in OTHERS for j in (r[i],r[i]*p)] + [
                 r['closing'], r['closing']*p,                           #Closing
-                
+
                 ]
 
                 yield row

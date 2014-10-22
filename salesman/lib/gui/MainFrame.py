@@ -183,14 +183,14 @@ class MainFrame(wx.Frame):
 
 
     def OnGenerateStatement(self, evt):
-        dlg = StatementCreationWizard(self)
+        writer = wx.GetApp().getPluginFromConfig(STATEMENT_WRITER).plugin_object
+        dlg = StatementCreationWizard(self, writer.ext_info)
         if dlg.ShowModal() == wx.ID_OK:
-
             startDate, endDate = dlg.GetDates()
             path = dlg.GetPath()
-            plugin = wx.GetApp().getPluginFromConfig(STATEMENT_FORMATTER)
-            self.backend.GenerateStatement(path, startDate, endDate,
-                plugin.plugin_object.format, changes_only=dlg.WantChangesOnly())
+            statement = self.backend.GenerateStatement(startDate, endDate,
+                                    changes_only=dlg.WantChangesOnly()),
+            writer.write(path, statement, self.backend.QI(), startDate, endDate)
             self.statusbar.PushStatusText('Generated statement file "{}"'
                                             .format(path))
 

@@ -39,7 +39,7 @@ class SettingsDialog(auto.SettingsDialog):
         """.format(*pluginPaths))
 
         self.pluginCtrlMap = {
-                        STATEMENT_FORMATTER:self.statementFormatter,
+                        STATEMENT_WRITER:self.statementWriter,
                         TRANSACTION_FORMATTER:self.transactionFormatter,
                         INIT_PARSER:self.initParser
                         }
@@ -86,17 +86,19 @@ class StatementCreationWizard(auto.StatementCreationWizard):
     </html></body>
     """
 
-    def __init__(self, parent):
+    def __init__(self, parent, ext_info):
+        """A ext_info is  (ext, description)"""
         super(StatementCreationWizard,self).__init__(parent)
         self.html.SetPage(self.MESSAGE)
+        self.ext_info = ext_info
 
     def OnPathButtonClick( self, event ):
         dlg = wx.FileDialog(self, message="Save Statement File..",
-                wildcard=STATEMENT_FILE_WILD_CARD,
+                wildcard=simple_wild_card_from_extension(*self.ext_info),
                 defaultFile=DEFAULT_STATEMENT_FILE_NAME,
                 style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-        path = get_save_path_from_dialog(dlg, STATEMENT_FILE_EXTENSION)
+        path = get_save_path_from_dialog(dlg, self.ext_info[0])
         if path is not None:
             self.pathCtrl.SetValue(path)
 

@@ -87,7 +87,7 @@ class Application(wx.App):
         self.setConfig(PLUGINS_SECTION_NAME, category, name)
         try:
             pub.sendMessage(category,
-                formatterPlugin=self.getPluginFromConfig(category))
+                plugin=self.getPluginFromConfig(category))
         except:
             #Rollback
             self.setConfig(PLUGINS_SECTION_NAME, category, previous)
