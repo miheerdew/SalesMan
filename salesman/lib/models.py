@@ -27,104 +27,10 @@ import sqlalchemy
 from .core import Core, SALE, ADDITION
 from .core import TimeLineError, ItemNotFoundError, ItemNotAvailableError
 from .schema import Transaction, Item, Unit
-from .utils import threadsafe, ToggleableMethods, run_if_enabled, pub,\
-                    normalizeString, standardizeString
+from .utils import threadsafe, ToggleableMethods, run_if_enabled, pub
 from .topics import *
 
 DATE_FORMAT='%d/%m/%Y'
-
-def DEFAULT_INIT_PARSER(fd):
-    dialect = csv.Sniffer().sniff(fd.read(1024))
-    fd.seek(0)
-    reader = csv.DictReader(fd, dialect=dialect)
-    items = []
-    permitted = {'name','qty','price','description','category'}
-    fnames=set(map(normalizeString,reader.fieldnames))
-    if not ( fnames <=  permitted):
-        e_msg = ('Cannot process file {} '.format(csvfile),
-        'Cannot recognize fieldnames {}'.format(list(fnames - permitted)) +
-        'The fieldnames should only be from {},'.format(list(permitted)))
-        raise UserError(*e_msg)
-
-    for i,row in enumerate(reader):
-        line_num = i+2
-        args = {normalizeString(k):standardizeString(v) for k,v in row.items()}
-        try:
-            args['qty']=int(args['qty'])
-            args['price']=float(args['price'])
-        except ValueError:
-            e_msg = ('Cannot process file {} '.format(csvfile),
-                'Cannot convert string to numeric'
-                'value at line {}'.format(line_num))
-            raise UserError(*e_msg)
-        items.append(Item(**args))
-    return items
-
-def DEFAULT_STATEMENT_FORMATTER(items, statement, startDate, endDate):
-        header1 = ['Statement : {1:{0}} - {2:{0}}'.\
-                    format(DATE_FORMAT, startDate, endDate),
-                    None,None,None,
-                    'Opening',None,
-                    'Closing',None,
-                    'Additions',None,
-                    'Sales',None,None,
-                    'Transfers',None,
-                    'Gifts',None]
-
-        header2 = [ 'Sr.No','Name','Category','Price',      #Item info
-                    'Qty','Total',                          #Opening
-                    'Qty','Total',                          #Closing
-                    'Qty','Total',                          #Additions
-                    'Qty','Discount','Total',               #Sales
-                    'Qty','Total',                          #Transfers
-                    'Qty','Total'                           #Gifts
-                ]
-
-        summable_entries = [ None, None, None, None,   #Item info
-                            None, 0,                    #Opening
-                            None, 0,                    #Closing
-                            None, 0,                    #Additions
-                            None, 0, 0,                 #Sales
-                            None, 0,                    #Transfers
-                            None, 0                     #Gifts
-                        ]
-
-        last_row = ['Total',None, None, None,          #Item info
-                    '', 0,                              #Opening
-                    '', 0,                              #Closing
-                    '', 0,                              #Additions
-                    '', 0, 0,                           #Sales
-                    '', 0,                              #Transfers
-                    '', 0                               #Gifts
-                ]
-        yield header1
-        yield header2
-
-        for i,item in enumerate(items.order_by(Item.category)):
-                r = statement[item.id]
-                p = item.price
-
-                row = [ i, item.name, item.category, p ,    #Item info
-                r.opening, r.opening*p,                     #Opening
-                r.closing, r.closing*p,                     #Closing
-                r.additions, r.additions*p,                 #Additions
-                r.sales, r.discount, r.sales*p - r.discount,#Sales
-                r.transfers, r.transfers*p,                 #Transfers
-                r.gifts, r.gifts*p                          #Gifts
-                ]
-
-                yield row
-
-                for i in range(len(summable_entries)):
-                    if summable_entries[i] is not None:
-                        summable_entries[i] += row[i]
-
-        for i in range(len(last_row)):
-                if last_row[i] == 0:
-                    last_row[i] = summable_entries[i]
-                    assert last_row[i] is not None
-        yield last_row
-
 
 
 class UserError(Exception):
@@ -309,7 +215,7 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     @threadsafe
-    def InitDatabase(self, initFile, parser=DEFAULT_INIT_PARSER):
+    def InitDatabase(self, initFile, parser):
         """Is enabled only when the trasaction count is zero."""
         try:
             items = []
@@ -354,7 +260,7 @@ class Application(ToggleableMethods):
 
     @run_if_enabled
     def GenerateStatement(self, statementFile, startDate, endDate,
-                    formatter=DEFAULT_STATEMENT_FORMATTER, changes_only=False):
+                            formatter, changes_only=False):
         e_reason = None
         if not isinstance(startDate, datetime.date):
             e_reason = 'start date is Invalid'
@@ -609,7 +515,6 @@ class TransactionMaker(ToggleableMethods):
         self.NotifyChanges()
 
     def AddItem(self, name, category, price, qty=0, discount=0):
-        name, category = map(standardizeString,(name,category))
         item_sig = (name,category,price)
         if qty <= 0 and (item_sig in self.units):
             del self.units[item_sig]

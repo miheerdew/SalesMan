@@ -23,7 +23,7 @@ from datetime import date
 from sqlalchemy import create_engine
 from .lib.core import Core, TimeLineError, ItemNotAvailableError, TransactionTypeError
 from .lib.models import Application, TransactionMaker
-from .lib.utils import setter, FunctionDisabledError, standardizeString
+from .lib.utils import setter, FunctionDisabledError, standardizeString, normalizeString
 from .lib.core import ADDITION, SALE, OTHER_TYPES
 from .lib.schema import Base, Item, Transaction, Unit
 from .lib.schema import ClearTable
@@ -34,6 +34,34 @@ GIFT, TRANSFER, LIBRARY = OTHER_TYPES
 BOOK = 'Books'
 EBOOK = 'EBooks'
 CD = 'CD/DVD'
+
+def DEFAULT_INIT_PARSER(fd):
+    dialect = csv.Sniffer().sniff(fd.read(1024))
+    fd.seek(0)
+    reader = csv.DictReader(fd, dialect=dialect)
+    items = []
+    permitted = {'name','qty','price','description','category'}
+    fnames=set(map(normalizeString,reader.fieldnames))
+    if not ( fnames <=  permitted):
+        e_msg = ('Cannot process file {} '.format(csvfile),
+        'Cannot recognize fieldnames {}'.format(list(fnames - permitted)) +
+        'The fieldnames should only be from {},'.format(list(permitted)))
+        raise UserError(*e_msg)
+
+    for i,row in enumerate(reader):
+        line_num = i+2
+        args = {normalizeString(k):standardizeString(v) for k,v in row.items()}
+        try:
+            args['qty']=int(args['qty'])
+            args['price']=float(args['price'])
+        except ValueError:
+            e_msg = ('Cannot process file {} '.format(csvfile),
+                'Cannot convert string to numeric'
+                'value at line {}'.format(line_num))
+            raise UserError(*e_msg)
+        items.append(Item(**args))
+    return items
+
 
 class TestSchema(unittest.TestCase):
     def setUp(self):
@@ -464,7 +492,7 @@ class TestApp(unittest.TestCase):
         reader.writerows(l)
         fd.seek(0)
 
-        self.core.InitDatabase(fd)
+        self.core.InitDatabase(fd, parser=DEFAULT_INIT_PARSER)
 
     def test_init_database(self):
         for i,j in enumerate(self.core.QueryItems()):
@@ -950,7 +978,7 @@ class TestTransactionMaker(unittest.TestCase):
                            ('KnR',BOOK,200,10,'For devs')]
                 w.writerows(self.i)
                 fd.seek(0)
-                self.backend.InitDatabase(fd)
+                self.backend.InitDatabase(fd, parser=DEFAULT_INIT_PARSER)
                 self.tm = TransactionMaker(self.backend)
 
         def test_makes_a_successful_transaction(self):
