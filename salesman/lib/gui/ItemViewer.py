@@ -133,7 +133,8 @@ class ItemViewer(ListCtrl, TextEditMixin, ColumnSorterMixin):
     def GetListCtrl(self): return self
 
     def GetItemAt(self, index):
-        return self.items[index]
+        item = self.items[index]
+        return Item(**{a:item[i] for i,a in enumerate(self.attrs)})
 
     def UpdateDisplay(self, items):
         count = items.count()
