@@ -189,7 +189,7 @@ class MainFrame(wx.Frame):
             startDate, endDate = dlg.GetDates()
             path = dlg.GetPath()
             statement = self.backend.GenerateStatement(startDate, endDate,
-                                    changes_only=dlg.WantChangesOnly()),
+                                    changes_only=dlg.WantChangesOnly())
             writer.write(path, statement, self.backend.QI(), startDate, endDate)
             self.statusbar.PushStatusText('Generated statement file "{}"'
                                             .format(path))
