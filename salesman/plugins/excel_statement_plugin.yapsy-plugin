@@ -1,0 +1,9 @@
+[Core]
+Name = Excel Statement Writer
+Module = excel_statement_plugin
+
+[Documentation]
+Author = Miheer Dewaskar
+Version = 0.1
+Website = https://github.com/miheerdew/SalesMan
+Description = An excel Plugin which sets formatting and printing options.
