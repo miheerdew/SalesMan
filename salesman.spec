@@ -1,13 +1,16 @@
 # -*- mode: python -*-
 import os.path as op
+import platform
 import wxversion;wxversion.select("2.8");import sys 
 block_cipher = None
 
-def list_python_files(dirname):
-    return [ f for f in os.listdir(dirname) if f.endswith('.py') ]
-
 plugins_dir = op.join('salesman','plugins') 
 plugins = Tree(plugins_dir, 'plugins', excludes=['*.pyc', '*~'])
+
+exe_name = 'salesman'
+
+if platform.system() == 'Windows':
+    exe_name += '.exe'
 
 a = Analysis(['main.py'],
              pathex=[sys.path[0]],
@@ -23,7 +26,7 @@ exe = EXE(pyz,
           a.zipfiles,
           a.datas + plugins,
           plugins,
-          name='salesman',
+          name=exe_name,
           debug=False,
           strip=None,
           upx=True,
