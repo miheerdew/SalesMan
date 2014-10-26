@@ -1,5 +1,5 @@
 *.py[cod]
-*.spec
+#*.spec
 # C extensions
 *.so
 MANIFEST
