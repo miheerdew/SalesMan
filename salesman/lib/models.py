@@ -142,6 +142,7 @@ class Application(ToggleableMethods):
                                     UNDO,
                                     REDO,
                                     GENERATE_STATEMENT,
+                                    GENERATE_REGISTRY,
                                     GET_HISTORY,
                                     GET_CATEGORIES,
                                     ADD_TRANSACTION,
@@ -179,6 +180,7 @@ class Application(ToggleableMethods):
     def _getMethodsToEnableOnOpenDatabase(self):
         l = [UNDO,
         GENERATE_STATEMENT,
+        GENERATE_REGISTRY,
         GET_HISTORY,
         GET_CATEGORIES,
         ADD_TRANSACTION,
@@ -260,6 +262,36 @@ class Application(ToggleableMethods):
         else:
             id = int(transaction)
         return WrapItems(self.core.QI(),self.core.GetHistory(id),strict=True)
+
+    @run_if_enabled
+    def GenerateRegistry(self,  startDate, endDate):
+        e_reason = None
+        if not isinstance(startDate, datetime.date):
+            e_reason = 'start date is Invalid'
+
+        if not isinstance(endDate, datetime.date):
+            e_reason = 'end date is Invalid'
+
+        if e_reason is not None:
+            raise UserError('Cannot generate registry',e_reason)
+
+        if startDate > endDate:
+            e_reason = ('Start date : {} is greater than End date : {}'
+                        .format(startDate, endDate))
+            raise UserError('Cannot generate registry',e_reason)
+
+        first_transaction = self.core.QT().\
+                            filter(Transaction.date >= startDate).\
+                            order_by(Transaction.id).first()
+        last_transaction =  self.core.QT().\
+                            filter(Transaction.date <= endDate).\
+                            order_by(Transaction.id.desc()).first()
+
+        end = last_transaction.id if last_transaction else 0
+        start = first_transaction.id if first_transaction else end+1
+
+        return self.core.GenerateRegistry(start, end)
+
 
     @run_if_enabled
     def GenerateStatement(self,  startDate, endDate, changes_only=False):
