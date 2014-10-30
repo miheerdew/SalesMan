@@ -27,6 +27,7 @@ STATEMENT_FILE_EXTENSION='csv'
 GET_CATEGORY='GetCategory'
 DEFAULT_DB_FILE_NAME='dbfile.{}'.format(DB_FILE_EXTENSION)
 DEFAULT_STATEMENT_FILE_NAME='statement'
+DEFAULT_REGISTRY_FILE_NAME='register'
 
 DB_FILE_WILD_CARD=\
         simple_wild_card_from_extension(DB_FILE_EXTENSION)

@@ -25,14 +25,14 @@ from yapsy.PluginManager import PluginManagerSingleton
 class SettingsDialog(auto.SettingsDialog):
     def __init__(self, parent):
         super(SettingsDialog,self).__init__(parent)
-        
+
         pluginPaths = wx.GetApp().GetPluginPlaces()
-        
+
         self.pluginsHtml.SetPage(
         """
         <html>
         <body><h3 align="center">Select Plugins</h3>
-        You can add customized plugins by placing them in the following 
+        You can add customized plugins by placing them in the following
         directories <ul><li>{}<li>{}</ul>
         <body>
         </html>
@@ -73,6 +73,8 @@ class SettingsDialog(auto.SettingsDialog):
         self.app.saveUserConfig()
         self.EndModal(wx.ID_SAVE)
 
+STATEMENT, REGISTRY = 0, 1
+
 class StatementCreationWizard(auto.StatementCreationWizard):
     MESSAGE = """
     <html><body>
@@ -87,19 +89,26 @@ class StatementCreationWizard(auto.StatementCreationWizard):
     </html></body>
     """
 
-    def __init__(self, parent, ext_info):
-        """A ext_info is  (ext, description)"""
+    #Plugin category
+    PLUGIN_CAT=[STATEMENT_WRITER, REGISTRY_WRITER]
+    STRINGS = ["Statement", "Register"]
+    DEFAULT_FNAME = [ DEFAULT_STATEMENT_FILE_NAME, DEFAULT_REGISTRY_FILE_NAME ]
+
+    def __init__(self, parent):
         super(StatementCreationWizard,self).__init__(parent)
         self.html.SetPage(self.MESSAGE)
-        self.ext_info = ext_info
+        self.output_type = STATEMENT
 
     def OnPathButtonClick( self, event ):
-        dlg = wx.FileDialog(self, message="Save Statement File..",
-                wildcard=simple_wild_card_from_extension(*self.ext_info),
-                defaultFile=DEFAULT_STATEMENT_FILE_NAME,
+        t = self.output_type
+        ext_info = wx.GetApp().getPluginFromConfig(self.PLUGIN_CAT[t]).plugin_object.ext_info
+
+        dlg = wx.FileDialog(self, message="Save {} File..".format(self.STRINGS[t]),
+                wildcard=simple_wild_card_from_extension(*ext_info),
+                defaultFile=self.DEFAULT_FNAME[t],
                 style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
 
-        path = get_save_path_from_dialog(dlg, self.ext_info[0])
+        path = get_save_path_from_dialog(dlg, ext_info[0])
         if path is not None:
             self.pathCtrl.SetValue(path)
 
@@ -124,12 +133,18 @@ class StatementCreationWizard(auto.StatementCreationWizard):
         else:
             evt.Skip()
 
+    def GetOutputType(self):
+        return self.output_type
+
+    def OnGenerateChoiceChanged(self, evt):
+        self.output_type = evt.GetInt()
+
     def GetDates(self):
         return self.startDate, self.endDate
 
     def GetPath(self):
         return self.path
-    
+
     def WantChangesOnly(self):
         return self.changesCheck.IsChecked()
 
