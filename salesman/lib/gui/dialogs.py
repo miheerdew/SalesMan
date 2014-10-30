@@ -40,6 +40,7 @@ class SettingsDialog(auto.SettingsDialog):
 
         self.pluginCtrlMap = {
                         STATEMENT_WRITER:self.statementWriter,
+                        REGISTRY_WRITER:self.registryWriter,
                         TRANSACTION_FORMATTER:self.transactionFormatter,
                         INIT_PARSER:self.initParser
                         }
