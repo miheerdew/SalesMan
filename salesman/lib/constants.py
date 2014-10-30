@@ -44,6 +44,8 @@ LAST_SESSION_SECTION_NAME='Last Session'
 PLUGINS_SECTION_NAME='Plugins'
 TRANSACTION_FORMATTER='Transaction Formatter'
 STATEMENT_WRITER='Statement Writer'
+REGISTRY_WRITER='Registry Writer'
+
 INIT_PARSER='Init Parser'
 
 NAME='name'
