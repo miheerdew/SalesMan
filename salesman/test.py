@@ -573,7 +573,7 @@ class TestApp(unittest.TestCase):
     def test_initial_disables(self):
         app = Application()
         app.Initialize()
-        for i in (('AddTransaction',''),('GenerateStatement',''), ('GenerateRegistry'), ('GetCategories',),
+        for i in (('AddTransaction',''),('GenerateStatement',''), ('GenerateRegistry',), ('GetCategories',),
                 ('GetHistory',1),('InitDatabase',''), ('QueryItems',),
                 ('QueryTransactions',),('Undo',1),('Redo',),('EditItem',1),('EditQty',1,2)):
             assert hasattr(app,i[0])
