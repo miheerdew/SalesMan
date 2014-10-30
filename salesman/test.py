@@ -643,6 +643,16 @@ class TestApp(unittest.TestCase):
                                 [2,-1],
                                 [2]])
 
+        registry = self.core.GenerateRegistry(date(2000,1,1), date(2029,2,2), changes_only=True)
+        self.check_registry(registry, opening=[30,20,10,10, 0, 0], closing=[27, 18, 7, 14, 1, 2],
+                transactions = [[-1, -1, -1],
+                                [-2],
+                                [-3],
+                                [4],
+                                [2,-1],
+                                [2]])
+
+
         registry = self.core.GenerateRegistry(txns[0][0], txns[1][0])
         self.check_registry(registry, opening=[30,20,10,10,0,0], closing=[28,18,7,14,2,0],
                                         transactions=[
@@ -652,6 +662,15 @@ class TestApp(unittest.TestCase):
                                             [4],
                                             [2],
                                             []])
+
+        registry = self.core.GenerateRegistry(txns[0][0], txns[1][0], changes_only=True)
+        self.check_registry(registry, opening=[30,20,10,10,0], closing=[28,18,7,14,2],
+                                        transactions=[
+                                            [-1,-1],
+                                            [-2],
+                                            [-3],
+                                            [4],
+                                            [2]])
 
     def check_registry(self, registry, opening, closing, transactions):
         self.assertEqual(len(registry), len(opening))

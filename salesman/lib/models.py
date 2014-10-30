@@ -264,7 +264,7 @@ class Application(ToggleableMethods):
         return WrapItems(self.core.QI(),self.core.GetHistory(id),strict=True)
 
     @run_if_enabled
-    def GenerateRegistry(self,  startDate, endDate):
+    def GenerateRegistry(self,  startDate, endDate, changes_only=False):
         e_reason = None
         if not isinstance(startDate, datetime.date):
             e_reason = 'start date is Invalid'
@@ -290,7 +290,7 @@ class Application(ToggleableMethods):
         end = last_transaction.id if last_transaction else 0
         start = first_transaction.id if first_transaction else end+1
 
-        return self.core.GenerateRegistry(start, end)
+        return self.core.GenerateRegistry(start, end, relative=changes_only)
 
 
     @run_if_enabled

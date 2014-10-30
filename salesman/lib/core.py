@@ -173,7 +173,7 @@ class Core:
         return statement
 
     @threadsafe
-    def GenerateRegistry(self, start=1, end=-1):
+    def GenerateRegistry(self, start=1, end=-1, relative=False):
         "Generate registry between start to end inclusive"
         start = self.getAbsoluteTransactionId(start)
         end = self.getAbsoluteTransactionId(end)
@@ -192,6 +192,12 @@ class Core:
                     registry[u.item_id]['closing'] += u.qty
                 else:
                     registry[u.item_id]['closing'] -= u.qty
+
+        if relative:
+            #Remove the items for which there are no transactions
+            for item_id in registry.keys():
+                if len(registry[item_id]['units']) == 0:
+                   del registry[item_id]
 
         return registry
 
