@@ -1,2 +1,2 @@
-* Make a register like mom wants
 * Add logging so that we know what changes are made in this session
+* Let TransactionMaker keep track of state so that we can edit an item
