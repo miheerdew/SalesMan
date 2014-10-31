@@ -57,8 +57,9 @@ class TransactionViewer(ListCtrl):
         if self.current_selection not in [None,self.count-1]:
             menu = wx.Menu()
             menu.Append(self.undoPopup, "Undo selected transaction")
-            menu.Append(self.delPopup, "Delete selected transaction")
-            menu.Append(self.editPopup, "Edit selected transaction")
+            if self.current_selection == self.count - 2:
+                menu.Append(self.delPopup, "Delete selected transaction")
+                menu.Append(self.editPopup, "Edit selected transaction")
             self.PopupMenu(menu)
             menu.Destroy()
 
@@ -72,9 +73,7 @@ class TransactionViewer(ListCtrl):
 
     def OnDel(self, event):
         dlg = wx.MessageDialog(self, "Are you sure you want to delete the"
-        " selected transaction. This will also permanently delete all"
-        " transactions below (and including) the selected transaction",
-        "Confirm Delete", wx.NO_DEFAULT|wx.YES_NO)
+        " selected transaction.", "Confirm Delete", wx.NO_DEFAULT|wx.YES_NO)
         if dlg.ShowModal() == wx.ID_YES:
             PostTransactionDeleteEvent(self, self.getSelectedTransaction())
 
