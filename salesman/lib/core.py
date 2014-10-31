@@ -172,6 +172,35 @@ class Core:
                     
         return statement
 
+    @threadsafe
+    def GenerateRegistry(self, start=1, end=-1, relative=False):
+        "Generate registry between start to end inclusive"
+        start = self.getAbsoluteTransactionId(start)
+        end = self.getAbsoluteTransactionId(end)
+
+        registry = {}
+        for item_id, qty in self.getHistory(start).items():
+            registry[item_id] = dict(opening=qty, units=[], closing=qty)
+
+        for t in self.QT().\
+          filter(and_(Transaction.id >= start, Transaction.id <= end)).\
+                              order_by(Transaction.id):
+              for u in t.units:
+                registry[u.item_id]['units'].append(u)
+
+                if u.type == ADDITION:
+                    registry[u.item_id]['closing'] += u.qty
+                else:
+                    registry[u.item_id]['closing'] -= u.qty
+
+        if relative:
+            #Remove the items for which there are no transactions
+            for item_id in registry.keys():
+                if len(registry[item_id]['units']) == 0:
+                   del registry[item_id]
+
+        return registry
+
 
     def getItemByProperties(self, item):
         """Get an item resembing the properies

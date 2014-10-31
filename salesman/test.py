@@ -173,6 +173,71 @@ class TestCore(unittest.TestCase):
                                 type=transaction[2])
 
 
+    def test_registry_generation(self):
+        transactions =(
+            (
+                date(2012,1,1),
+                ((1,1,SALE,4),(2,2,GIFT),(3,3,TRANSFER),(4,4,ADDITION)),
+                None
+            ),
+            (
+                date(2012,1,2),
+                (  (Item(name='Mathematical Circles',
+                        price=120, category=BOOK),
+                    2,
+                    ADDITION),
+                    (1,1, LIBRARY)
+                ),
+                None
+            ),
+            (
+                date(2012,1,3),
+                ((5,1,SALE,10),(1,1,SALE,4)),
+                SALE
+            ),
+            (
+                date(2012,2,3),
+                (   (Item(name='Mathematical Circles 2',
+                        price=120, category=BOOK),
+                    2,
+                    ADDITION),
+                ),
+                None
+            )
+        )
+
+        ids = [ self.addSimpleTransaction(t) for t in transactions]
+        registry = self.core.GenerateRegistry()
+        self.check_registry(registry, opening=[30,20,10,10, 0, 0], closing=[27, 18, 7, 14, 1, 2],
+                transactions = [[-1, -1, -1],
+                                [-2],
+                                [-3],
+                                [4],
+                                [2,-1],
+                                [2]])
+
+        registry = self.core.GenerateRegistry(ids[0],ids[1])
+        self.check_registry(registry, opening=[30,20,10,10,0,0], closing=[28,18,7,14,2,0],
+                                        transactions=[
+                                            [-1,-1],
+                                            [-2],
+                                            [-3],
+                                            [4],
+                                            [2],
+                                            []])
+
+    def check_registry(self, registry, opening, closing, transactions):
+        self.assertEqual(len(registry), len(opening))
+        for i in range(len(opening)):
+            self.assertEqual(registry[i+1]['opening'], opening[i])
+            self.assertEqual(registry[i+1]['closing'], closing[i])
+            self.assertEqual(len(registry[i+1]['units']), len(transactions[i]))
+            for j, qty in enumerate(transactions[i]):
+                    u = registry[i+1]['units'][j]
+                    if u.type != ADDITION:
+                        qty = -qty
+                    self.assertEqual(u.qty, qty)
+
     def test_statement_generation(self):
         transactions =(
             (
@@ -508,7 +573,7 @@ class TestApp(unittest.TestCase):
     def test_initial_disables(self):
         app = Application()
         app.Initialize()
-        for i in (('AddTransaction',''),('GenerateStatement',''),('GetCategories',),
+        for i in (('AddTransaction',''),('GenerateStatement',''), ('GenerateRegistry',), ('GetCategories',),
                 ('GetHistory',1),('InitDatabase',''), ('QueryItems',),
                 ('QueryTransactions',),('Undo',1),('Redo',),('EditItem',1),('EditQty',1,2)):
             assert hasattr(app,i[0])
@@ -534,6 +599,90 @@ class TestApp(unittest.TestCase):
 
         return self.core.AddTransaction(date=transaction[0],units=units,
                                 type=transaction[2])
+
+    def test_registry_generation(self):
+        txns = transactions =(
+            (
+                date(2012,1,1),
+                ((1,1,SALE,4),(2,2,GIFT),(3,3,TRANSFER),(4,4,ADDITION)),
+                None
+            ),
+            (
+                date(2012,1,2),
+                (  (Item(name='Mathematical Circles',
+                        price=120, category=BOOK),
+                    2,
+                    ADDITION),
+                    (1,1, LIBRARY)
+                ),
+                None
+            ),
+            (
+                date(2012,1,3),
+                ((5,1,SALE,10),(1,1,SALE,4)),
+                SALE
+            ),
+            (
+                date(2012,2,3),
+                (   (Item(name='Mathematical Circles 2',
+                        price=120, category=BOOK),
+                    2,
+                    ADDITION),
+                ),
+                None
+            )
+        )
+
+        ids = [ self.addSimpleTransaction(t) for t in transactions]
+        registry = self.core.GenerateRegistry(date(2000,1,1), date(2029,2,2))
+        self.check_registry(registry, opening=[30,20,10,10, 0, 0], closing=[27, 18, 7, 14, 1, 2],
+                transactions = [[-1, -1, -1],
+                                [-2],
+                                [-3],
+                                [4],
+                                [2,-1],
+                                [2]])
+
+        registry = self.core.GenerateRegistry(date(2000,1,1), date(2029,2,2), changes_only=True)
+        self.check_registry(registry, opening=[30,20,10,10, 0, 0], closing=[27, 18, 7, 14, 1, 2],
+                transactions = [[-1, -1, -1],
+                                [-2],
+                                [-3],
+                                [4],
+                                [2,-1],
+                                [2]])
+
+
+        registry = self.core.GenerateRegistry(txns[0][0], txns[1][0])
+        self.check_registry(registry, opening=[30,20,10,10,0,0], closing=[28,18,7,14,2,0],
+                                        transactions=[
+                                            [-1,-1],
+                                            [-2],
+                                            [-3],
+                                            [4],
+                                            [2],
+                                            []])
+
+        registry = self.core.GenerateRegistry(txns[0][0], txns[1][0], changes_only=True)
+        self.check_registry(registry, opening=[30,20,10,10,0], closing=[28,18,7,14,2],
+                                        transactions=[
+                                            [-1,-1],
+                                            [-2],
+                                            [-3],
+                                            [4],
+                                            [2]])
+
+    def check_registry(self, registry, opening, closing, transactions):
+        self.assertEqual(len(registry), len(opening))
+        for i in range(len(opening)):
+            self.assertEqual(registry[i+1]['opening'], opening[i])
+            self.assertEqual(registry[i+1]['closing'], closing[i])
+            self.assertEqual(len(registry[i+1]['units']), len(transactions[i]))
+            for j, qty in enumerate(transactions[i]):
+                    u = registry[i+1]['units'][j]
+                    if u.type != ADDITION:
+                        qty = -qty
+                    self.assertEqual(u.qty, qty)
 
     def test_statement_generation(self):
         txns =(

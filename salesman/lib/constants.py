@@ -27,6 +27,7 @@ STATEMENT_FILE_EXTENSION='csv'
 GET_CATEGORY='GetCategory'
 DEFAULT_DB_FILE_NAME='dbfile.{}'.format(DB_FILE_EXTENSION)
 DEFAULT_STATEMENT_FILE_NAME='statement'
+DEFAULT_REGISTRY_FILE_NAME='register'
 
 DB_FILE_WILD_CARD=\
         simple_wild_card_from_extension(DB_FILE_EXTENSION)
@@ -44,6 +45,8 @@ LAST_SESSION_SECTION_NAME='Last Session'
 PLUGINS_SECTION_NAME='Plugins'
 TRANSACTION_FORMATTER='Transaction Formatter'
 STATEMENT_WRITER='Statement Writer'
+REGISTRY_WRITER='Registry Writer'
+
 INIT_PARSER='Init Parser'
 
 NAME='name'
@@ -52,6 +55,7 @@ CSV='CSV'
 APP_CONFIG_FILE=APP_NAME+".conf"
 PLUGINS_DIR_NAME='plugins'
 DEFAULT_PLUGIN_MAP={
+        REGISTRY_WRITER: 'Default Registry Writer',
         STATEMENT_WRITER:'Default Statement Writer',
         TRANSACTION_FORMATTER: 'Default Transaction Formatter',
         INIT_PARSER:'Default Init Parser'

@@ -19,6 +19,7 @@ from wx.lib.wordwrap import wordwrap
 import os
 from functools import partial
 from .dialogs import StatementCreationWizard, SettingsDialog
+from .dialogs import STATEMENT, REGISTRY
 from ..utils import pub, silent_remove, get_save_path_from_dialog
 from ..topics import *
 from ..constants import *
@@ -183,16 +184,23 @@ class MainFrame(wx.Frame):
 
 
     def OnGenerateStatement(self, evt):
-        writer = wx.GetApp().getPluginFromConfig(STATEMENT_WRITER).plugin_object
-        dlg = StatementCreationWizard(self, writer.ext_info)
+        dlg = StatementCreationWizard(self)
         if dlg.ShowModal() == wx.ID_OK:
             startDate, endDate = dlg.GetDates()
             path = dlg.GetPath()
-            statement = self.backend.GenerateStatement(startDate, endDate,
-                                    changes_only=dlg.WantChangesOnly())
-            writer.write(path, statement, self.backend.QI(), startDate, endDate)
-            self.statusbar.PushStatusText('Generated statement file "{}"'
-                                            .format(path))
+            output_type = dlg.GetOutputType()
+
+            writer = wx.GetApp().getPluginFromConfig({ STATEMENT: STATEMENT_WRITER,
+                               REGISTRY: REGISTRY_WRITER }[output_type]).plugin_object
+            if output_type ==  STATEMENT:
+                result = self.backend.GenerateStatement(startDate, endDate,
+                                        changes_only=dlg.WantChangesOnly())
+            else:
+                result = self.backend.GenerateRegistry(startDate, endDate,
+                                        changes_only=dlg.WantChangesOnly())
+
+            writer.write(path, result, self.backend.QI(), startDate, endDate)
+            self.statusbar.PushStatusText('Generated output file "{}"'.format(path))
 
         dlg.Destroy()
 
